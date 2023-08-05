@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const studentSchema = mongoose.Schema({
   RollNo: {
-    type: String,
+    type: Number,
     required: true,
     unique: true,
   },
@@ -10,16 +10,14 @@ const studentSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  Date_of_Addmision: {
-    type: Date,
-    required: true,
-  },
   Gender: {
     type: String,
+    default:"null",
     required: true,
   },
   Cgpi: {
     type: Number,
+    default:0,
     required: true,
   },
   Ac_key: {

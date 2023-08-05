@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyparser = require("body-parser");
+const Router1=require("./Router/router1")
 
 // const connected = require("./db/db")
 
@@ -27,13 +28,10 @@ const connected = async () => {
   }
 };
 
-connected();
 
-app.get("/",(req,res)=>{
-    res.send("Back End is Working")
-})
+app.use("/",Router1);
+// connected();
 
-connected();
 
 app.listen(9000,()=>{
   console.log(" server is listen on port 9000")
