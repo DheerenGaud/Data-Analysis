@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyparser = require("body-parser");
 
-const connected = require("./db/db")
+// const connected = require("./db/db")
 
 
 app = express();
@@ -15,19 +15,19 @@ app.use(bodyparser.urlencoded({ extended: true }));
 
 
 
-connected();
-// const connected = async () => {
-//   try {
-//     await mongoose.connect("mongodb://0.0.0.0:27017/DataAnalsis", {
-//       useNewUrlParser: true,
-//       useUnifiedTopology: true,
-//     });
-//     console.log("database is connected...");
-//   } catch (error) {
-//     console.log("some error in connecting database");
-//   }
-// };
+const connected = async () => {
+  try {
+    await mongoose.connect("mongodb://0.0.0.0:27017/DataAnalsis", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("database is connected...");
+  } catch (error) {
+    console.log("some error in connecting database");
+  }
+};
 
+connected();
 
 app.get("/",(req,res)=>{
     res.send("Back End is Working")
