@@ -30,7 +30,7 @@ const connected = async () => {
 
 
 app.use("/",Router1);
-// connected();
+connected();
 
 
 app.listen(9000,()=>{

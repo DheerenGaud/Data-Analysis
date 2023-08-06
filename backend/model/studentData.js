@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const studentSchema = mongoose.Schema({
-  RollNo: {
+  Roll_No: {
     type: Number,
     required: true,
     unique: true,
@@ -25,10 +25,11 @@ const studentSchema = mongoose.Schema({
     required: true,
     refPath: "Ac_model",
   },
-  Ac_model: {
-    type: String,
-    required: true,
-    enum: ["AcademicYear", "dceAcademicYear"], 
-  },
+ 
 });
+// Ac_model: {
+//   type: String,
+//   required: true,
+//   enum: ["AcademicYear", "dceAcademicYear"], 
+// },
 module.exports = mongoose.model("StudentData", studentSchema);
