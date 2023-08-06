@@ -42,6 +42,7 @@ exports.CheckUnqueStudent = async (jsonData, Departname, End_Year) => {
     return RepetdRollNos
       // throw new Error('These students are already in the database'); // Throw an error instead of sending a response
     // }
+    //heeloo
   } catch (err) {
     console.log(err);
     throw new Error('Error occurred while checking unique students');
