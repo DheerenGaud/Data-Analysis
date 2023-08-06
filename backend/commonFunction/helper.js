@@ -1,7 +1,7 @@
 const AcademicYear = require('../model/acdemicYear');
 const StudentData = require('../model/studentData');
 
-exports.AddStudent = async (jsonData, Ac_key, Departname, End_Year, res) => {
+exports.AddStudent = async (jsonData, Ac_key, Departname, End_Year) => {
   const errors = [];
   try {
     for (const data of jsonData) {

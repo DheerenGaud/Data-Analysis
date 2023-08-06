@@ -1,14 +1,25 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyparser = require("body-parser");
 const Router1=require("./Router/router1")
-
+const mongoose = require("mongoose");
 const connected = require("./db/db")
+
+// const connected = require("./db/db")
 
 
 app = express();
 
+console.log(process.env.DATABASE)
+
+// mongoose.connect(process.env.DATABASE,{
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// }).then((res)=>{
+//   console.log("DB CONNECTED SUCCESSFULLY");
+// }).catch((err) =>{
+//   console.log(err);
+// })
 
 app.use(cors({ origin: "http://localhost:3000", methods: ["GET", "POST"] }));
 app.use(express.json());
@@ -36,4 +47,5 @@ connected();
 app.listen(9000,()=>{
   console.log(" server is listen on port 9000")
 })
+
 

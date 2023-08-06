@@ -17,7 +17,6 @@ const academicSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  
 });
 // dse_key: {
 //   type: mongoose.Schema.Types.ObjectId,
