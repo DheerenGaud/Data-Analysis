@@ -1,7 +1,7 @@
 const AcademicYear = require('../model/acdemicYear');
 const StudentData = require('../model/studentData');
 
-exports.AddStudent = async (jsonData, Ac_key, Departname, End_Year) => {
+exports.AddStudent = async (jsonData, Ac_key, Departname, End_Year, res) => {
   const errors = [];
   try {
     for (const data of jsonData) {
@@ -16,7 +16,7 @@ exports.AddStudent = async (jsonData, Ac_key, Departname, End_Year) => {
       } catch (error) {
         console.log('Error occurred while adding student');
         await StudentData.deleteMany({ Ac_key: Ac_key });
-        await AcademicYear.deleteOne({ Departname: Departname, End_Year: End_Year });
+        // await AcademicYear.deleteOne({ Departname: Departname, End_Year: End_Year });
         errors.push('Error occurred while adding student ' + newStudent.Roll_No);
       }
     }
@@ -42,7 +42,6 @@ exports.CheckUnqueStudent = async (jsonData, Departname, End_Year) => {
     return RepetdRollNos
       // throw new Error('These students are already in the database'); // Throw an error instead of sending a response
     // }
-    //heeloo
   } catch (err) {
     console.log(err);
     throw new Error('Error occurred while checking unique students');
