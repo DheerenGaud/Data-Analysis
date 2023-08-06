@@ -5,7 +5,8 @@ const Router1=require("./Router/router1")
 const mongoose = require("mongoose");
 const connected = require("./db/db")
 
-require("dotenv").config();
+// const connected = require("./db/db")
+
 
 app = express();
 
