@@ -11,13 +11,11 @@ Router.get("",(req,res)=>{
     res.send("hello")
 });
 
-
-
 Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
   try {
     const { Departname, Start_Year, End_Year, No_of_student } = req.body;
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
+    const sheetName = workbook.SheetNames[2];
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
 
