@@ -11,49 +11,38 @@ Router.get("",(req,res)=>{
     res.send("hello")
 });
 
-
-
-Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
-    
+Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => { 
     try {
       const { Departname, Start_Year, End_Year, No_of_student } = req.body;
       const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-      const sheetName = workbook.SheetNames[2];
+      const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
       const RepetdRollNos = new Set();
       
-
-
     const existingAcademicYear = await AcademicYear.findOne({
       Departname: Departname,
       End_Year: End_Year,
     });
-
-
+    for (const data of jsonData) {
+        try {
+          const isAvailable = await StudentData.findOne({ Roll_No: data.Roll_No });
+          if (isAvailable) {
+            // console.log("is there");
+            RepetdRollNos.add(data.Roll_No);
+          }
+        } catch (err) {
+            console.log(err);
+          //return res.json({ status: "error", data: "Error occurred while Finding student" });
+          }
+      }
+      if(RepetdRollNos.size !== 0) {
+        await AcademicYear.deleteOne({ Departname: Departname, End_Year: End_Year });
+        return res.json({ status: "error", data: "These students are already in the database", value: [...RepetdRollNos] });
+      }
 
     if (!existingAcademicYear) {
-   
       try {
-
-        for (const data of jsonData) {
-            try {
-              const isAvailable = await StudentData.findOne({ Roll_No: data.Roll_No });
-              if (isAvailable) {
-                console.log("is there");
-                RepetdRollNos.add(data.Roll_No);
-              }
-            } catch (err) {
-                console.log(err);
-              //return res.json({ status: "error", data: "Error occurred while Finding student" });
-              }
-          }
-
-          if(RepetdRollNos.size !== 0) {
-            await AcademicYear.deleteOne({ Departname: Departname, End_Year: End_Year });
-            return res.json({ status: "error", data: "These students are already in the database", value: [...RepetdRollNos] });
-          }
-         
         const newAcademicYear = await AcademicYear.create({
           Departname,
           Start_Year,
@@ -87,13 +76,77 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
         return res.json({ status: "error", data: "Error while saving students from excel sheet or crating new Acdmic year" });
       }
     } else {
-      // Department with this End-year already exists
-      return res.json({ status: "error", data: "Department with this End-year already exists!" });
+        console.log(jsonData);
+        try {
+            for (const data of jsonData) {
+                const { Name, Roll_No } = data;
+                const newStudent = {
+                  Name: Name,
+                  Roll_No: Roll_No,
+                  Ac_key: existingAcademicYear._id,
+                };
+                try {
+                  await StudentData.create(newStudent);
+                //   console.log("Student added successfully");
+                } catch (error) {
+                  console.log("Error occurred while adding student");
+                  await StudentData.deleteMany({Ac_key:newAcademicYear._id})
+                  await AcademicYear.deleteOne({ Departname: Departname, End_Year: End_Year });
+                  return res.json({ status: "error", data: "Error occurred while adding student" });
+                }
+              }
+        } catch (error) {
+            console.log("error => " + error);
+            return res.json({ status: "error", data: "Error while saving students from excel sheet in Alredy Macked Accedmic year" });
+        }
+      return res.json({ status: "ok", data: " Successfully Added New Sutudent !!" });
     }
   } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
   }
 });
+
+Router.post("/Individual",async(req,res)=>{
+  
+    const {Departname,Start_Year,End_Year,No_of_student,students}=req.body;
+    const RepetdRollNos = new Set();
+
+     
+    try {
+        const existingAcademicYear = await AcademicYear.findOne({
+            Departname: Departname,
+            End_Year: End_Year,
+          });
+         for (const data of students) {
+            try {
+              const isAvailable = await StudentData.findOne({ Roll_No: data.Roll_No });
+              if (isAvailable) {
+                // console.log("is there");
+                RepetdRollNos.add(data.Roll_No);
+              }
+            } catch (err) {
+                console.log(err);
+              //return res.json({ status: "error", data: "Error occurred while Finding student" });
+              }
+          }
+
+          if(RepetdRollNos.size !== 0) {
+            await AcademicYear.deleteOne({ Departname: Departname, End_Year: End_Year });
+            return res.json({ status: "error", data: "These students are already in the database", value: [...RepetdRollNos] });
+          }
+          if (!existingAcademicYear) {
+               
+          }
+          else{
+
+          }
+         
+    } catch (error) {
+        
+    }
+   
+})
+
 
    
 module.exports= Router
