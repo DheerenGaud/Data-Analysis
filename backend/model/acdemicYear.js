@@ -17,11 +17,11 @@ const academicSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  dse_key: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "dceAcademicYear",
-    required: true,
-  },
+  // dse_key: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "dceAcademicYear",
+  //   required: true,
+  // },
 });
 
 module.exports = mongoose.model("AcademicYear", academicSchema);
