@@ -4,7 +4,7 @@ const xlsx =require("xlsx")
 const multer =require("multer")
 const AcademicYear =require("../model/acdemicYear")
 const StudentData=require("../model/studentData")
-const {AddStudent,CheckUnqueStudent}=require("../commonFunction/helper")
+const {AddStudent,CheckUnqueStudent,DeleteStudent,UpdateSem}=require("../commonFunction/helper")
 const uplode =multer()
 
 Router.get("",(req,res)=>{
@@ -16,7 +16,7 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
     const { Departname, Start_Year, End_Year, No_of_student } = req.body;
     
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
+    const sheetName = workbook.SheetNames[2];
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
 
@@ -25,7 +25,7 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
       End_Year: End_Year,
     });
 
-    const duplicates = await CheckUnqueStudent(jsonData, Departname, End_Year);
+    const duplicates = await CheckUnqueStudent(jsonData);
 
     if (duplicates.size !== 0) {
       return res.json({
@@ -56,9 +56,9 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
 
 Router.post("/Individual",async(req,res)=>{
     const {Departname,Start_Year,End_Year,No_of_student,students}=req.body;
-    const duplicates = await CheckUnqueStudent(students, Departname, End_Year);
+    const duplicates = await CheckUnqueStudent(students);
     try {
-          const existingAcademicYear = await AcademicYear.findOne({
+         const existingAcademicYear = await AcademicYear.findOne({
             Departname: Departname,
             End_Year: End_Year,
           });
@@ -88,6 +88,67 @@ Router.post("/Individual",async(req,res)=>{
       return res.status(500).json({ status: 'error', data: 'Internal server error.' });
     }
    
+})
+
+Router.post("/deleteStudent",async(req,res)=>{
+  const {Departname,End_Year,students}=req.body;
+  const duplicates = await CheckUnqueStudent(students);
+  try {
+        const existingAcademicYear = await AcademicYear.findOne({
+          Departname: Departname,
+          End_Year: End_Year,
+        });
+        if (duplicates.size === 0) {
+          return res.json({
+            status: 'error',
+            data: 'No students Found  database',
+            value: Array.from(duplicates),
+          });
+        }
+        else{
+        if (existingAcademicYear) {
+            await DeleteStudent(students, existingAcademicYear._id, Departname);
+          return res.json({ status: "ok", data: "All student deleted successfully"});
+        }
+        else{
+          return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
+        } 
+        }
+  } catch (error) {
+    console.log('error => ' + error);
+    return res.status(500).json({ status: 'error', data: 'Internal server error.' });
+  }
+})
+
+Router.put("/semesterData",async(req,res)=>{
+  const {Departname,End_Year,students,SemNo}=req.body;
+  const duplicates = await CheckUnqueStudent(students);
+  try {
+        const existingAcademicYear = await AcademicYear.findOne({
+          Departname: Departname,
+          End_Year: End_Year,
+        });
+
+        if (duplicates.size === 0) {
+          return res.json({
+            status: 'error',
+            data: 'No students Found  database',
+            value: Array.from(duplicates),
+          });
+        }
+        else{
+        if (existingAcademicYear) {
+           await UpdateSem(students,SemNo-1);
+          return res.json({ status: "ok", data: "All student Semester updated successfully"});
+        }
+        else{
+          return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
+        } 
+        }
+  } catch (error) {
+    console.log('error => ' + error);
+    return res.status(500).json({ status: 'error', data: 'Internal server error.' });
+  }
 })
    
 module.exports= Router

@@ -5,13 +5,7 @@ const Router1=require("./Router/router1")
 const mongoose = require("mongoose");
 // const connected = require("./db/db")
 
-
-
 app = express();
-
-
-
-
 
 app.use(cors({ origin: "http://localhost:3000", methods: ["GET", "POST"] }));
 app.use(express.json());
