@@ -14,10 +14,12 @@ const semesterSchema = mongoose.Schema({
     Sgpi: {
       type: Number,
       required: true,
+      default:0.00,
     },
     Status: {
       type: Boolean,
       required: true,
+      default:false,
     },
   }],
   Kt_count: {
