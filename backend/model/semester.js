@@ -22,6 +22,11 @@ const semesterSchema = mongoose.Schema({
     ExternalYear:{
       type: Date,
       required: true,
+    },
+    NoOfKts:{
+      type: Number,
+      required: true,
+      default: 0,
     }
   }],
   Kt_count: {

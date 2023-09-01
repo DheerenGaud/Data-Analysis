@@ -25,6 +25,7 @@ const studentSchema = mongoose.Schema({
     required: true,
     refPath: "Ac_model",
   },
+  
  
 });
 // Ac_model: {
