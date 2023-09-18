@@ -200,59 +200,6 @@ Router.put("/semesterData",async(req,res)=>{
   }
 })
 
-Router.post('/sheet', async (req, res) => {
-  const { Departname, End_Year } = req.body; // Use req.query for GET requests
-  
-  try {
-    const existingAcademicYear = await AcademicYear.findOne({
-      Departname: Departname,
-      End_Year: End_Year,
-    });
-
-    const AllStudent = await StudentData.find({ Ac_key: existingAcademicYear._id });
-
-    const worksheetData = AllStudent.map((Student, index) => ({
-      S_no: index + 1,
-      Roll_No: Student.Roll_No,
-      Name: Student.Name,
-      Gender: Student.Gender,
-    }));
-
-    const worksheet = xlsx.utils.json_to_sheet(worksheetData); // Remove unnecessary items
-    const fontOptions = { bold: true, size: 16 };
-    worksheet['A1'].s = fontOptions;
-    
-    console.log(worksheet);
-    const columnWidths = [
-      { wch: 8 },
-      { wch: 10 },
-      { wch: 20 },
-      { wch: 10 },
-    ];
-    worksheet['!cols'] = columnWidths;
-    
-    const workbook = {
-      Sheets: { 'My Students': worksheet },
-      SheetNames: ['My Students'],
-    };
-    
-    const filePath = 'students.xlsx';
-    xlsx.writeFile(workbook, filePath);
-    
-
-
-
-    res.setHeader('Content-Disposition', `attachment; filename=${filePath}`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    
-    // Send the file
-    res.send(filePath);
-
-  } catch (e) {
-    res.status(500).send(e);
-  }
-});
-
 Router.post("/generate-excel", async(req, res) => {
   const {Departname,End_Year}=req.body;
   console.log(req.body)
