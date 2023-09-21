@@ -7,8 +7,8 @@ import Navigationbar from '../components/Navbar';
 import Appbar from '../components/Appbar';
 import Navbar from '../components/Navbar';
 import dayjs from 'dayjs';
-import EnhancedTable from './studenttable';
 import StudentTable from './studenttable';
+import {studentByAcdmicYear} from "../api/api"
 
 
 export default function SelectBatch() {
@@ -17,6 +17,7 @@ export default function SelectBatch() {
   const [open, setOpen] = React.useState(false);
 
   const [submitted, setSubmitted] = useState(false);
+  const [students,setStudent]=useState([]);
   
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -26,38 +27,44 @@ export default function SelectBatch() {
     setOpen(false);
   };
 
+
   const [data, setData] = useState({
-    department: '',
+    Departname: '',
     startYear: null,
-    endYear: null,
+    End_Year: null,
   });
 
   const handleDepartmentChange = (event) => {
     const newDepartment = event.target.value;
     setData((prevData) => ({
       ...prevData,
-      department: newDepartment,
+      Departname: newDepartment,
     }));
   };
 
   const handleDateChange = (date) => {
-    const selectedYear = dayjs(date).format('YYYY');
+    const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
+    console.log(formattedDate);
     setData((prevData) => ({
       ...prevData,
-      startYear: Number(selectedYear),
-      endYear: Number(selectedYear) + 4,
+      Start_Year: formattedDate, // Update Start_YearMonth with the formatted date
+      End_Year: dayjs(date).add(4, 'year').format('MMMM YYYY'), // Calculate and format End_YearMonth
     }));
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === 'Enter' && data.department && data.startYear) {
+    if (event.key === 'Enter' && data.Departname && data.startYear) {
       handleBatchSubmit();
     }
   };
 
-  const handleBatchSubmit = () => {
-      console.log(data);
+  const handleBatchSubmit = async() => {
+    const x= await studentByAcdmicYear(data)
+    if(x.data.status=="ok"){
+      console.log(x.data);
       setSubmitted(true);
+      setStudent(x.data.data)
+    }
   };
 
 
@@ -73,7 +80,7 @@ export default function SelectBatch() {
           <Box component="main" sx={{ flexGrow: 1, p: 15}}>
           <Grid container justifyContent="center">
           <Grid item xs={12}>
-          <StudentTable></StudentTable>
+          <StudentTable allStudent={students} data={data}></StudentTable>
           </Grid>
           </Grid>
           </Box>
@@ -91,7 +98,7 @@ export default function SelectBatch() {
       <Paper elevation={3} sx={{ flexGrow: 1, p: 6 }}>
         <Grid container spacing={1} alignItems="center">
           <Grid item xs={12} md={6}>
-            <DepartmentSelect value={data.department} onChange={handleDepartmentChange} />
+            <DepartmentSelect value={data.Departname} onChange={handleDepartmentChange} />
           </Grid>
           <Grid item xs={12} md={6} className='pageStyle'>
             <MonthYearSelect value={data.startYear} onChange={handleDateChange} onKeyDown={handleKeyDown} />

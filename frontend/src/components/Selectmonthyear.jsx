@@ -10,7 +10,7 @@ const MonthYearSelect = ({ value, onChange, onKeyDown }) => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DatePicker
         selectstartYear
-        label="Select Month and Year"
+        label="MM/YYYY"
         onChange={onChange}
         views={['year', 'month']}
         openTo="year"

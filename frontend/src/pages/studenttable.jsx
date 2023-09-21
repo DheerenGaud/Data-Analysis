@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState ,useRef} from 'react';
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -10,19 +9,14 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import SemesterSelect from '../components/Selectsemester';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Radio from '@mui/material/Radio';
+import MonthYearSelect from '../components/Selectmonthyear';
 
 
 
@@ -71,7 +65,7 @@ const headCells = [
     id: 'gender',
     numeric: false,
     disablePadding: false,
-    label: 'Gender',
+    label: '',
   },
   {
     id: 'sgpi',
@@ -85,6 +79,24 @@ const headCells = [
     disablePadding: false,
     label: 'Status',
   },
+  {
+    id: 'Kt_Count',
+    numeric: false,
+    disablePadding: false,
+    label: 'Kt Count',
+  },
+  {
+    id: 'Kt_Count',
+    numeric: false,
+    disablePadding: false,
+    label: 'Internal Year',
+  },
+  {
+    id: 'Kt_Count',
+    numeric: false,
+    disablePadding: false,
+    label: 'External Year',
+  },
 ];
 
 const studentsData = [
@@ -94,7 +106,7 @@ const studentsData = [
 ];
 
 function EnhancedTableHead(props) {
-  const { order, orderBy, onRequestSort } = props;
+  const { order, orderBy, onRequestSort,allStudent} = props;
 
   return (
     <TableHead>
@@ -131,13 +143,23 @@ EnhancedTableHead.propTypes = {
   orderBy: PropTypes.string.isRequired,
 };
 
-export default function EnhancedTable() {
+export default function EnhancedTable(props) {
+  const { allStudent,data} = props;
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedSemester, setSelectedSemester] = useState('');
-  const [students, setStudents] = useState(studentsData);
+  const addNewAtributeStudents = allStudent.map(student => ({
+    ...student,
+    sgpi: -1,     // You can set the default value for sgpi here
+    status: true,  // You can set the default value for status here
+    InternalYear:'',
+    ExternalYear:'',
+    NoOfKts:0,
+  }));
+  
+  const [students, setStudents] = useState(addNewAtributeStudents);
 
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -161,22 +183,29 @@ export default function EnhancedTable() {
 
   const handleSGPIChange = (studentId, value) => {
     const updatedStudents = students.map((student) =>
-      student.id === studentId ? { ...student, sgpi: value } : student
+      student.Roll_No === studentId ? { ...student, sgpi: value } : student
     );
     setStudents(updatedStudents);
   };
 
   const handleStatusChange = (studentId, value) => {
+    console.log(value);
     const updatedStudents = students.map((student) =>
-      student.id === studentId ? { ...student, status: value } : student
+      student.Roll_No === studentId ? { ...student, status: !value } : student
     );
+   
     setStudents(updatedStudents);
   };
 
   const handleSaveData = () => {
-    console.log("Selected Semester:", selectedSemester);
-    console.log("Students Data:", students);
+    
+    const p={ Departname:data.Departname,
+    End_Year: data.End_Year,
+  students:students,
+  SemNo:selectedSemester}
+  console.log(p);
   };
+
 
 
 
@@ -208,11 +237,11 @@ export default function EnhancedTable() {
                 <TableRow
                   hover
                   tabIndex={-1}
-                  key={student.name}
+                  key={student.Name}
                   sx={{ cursor: 'pointer' }}
                 >
-                  <TableCell align="left">{student.name}</TableCell>
-                  <TableCell align="left">{student.rollNo}</TableCell>
+                  <TableCell align="left">{student.Name}</TableCell>
+                  <TableCell align="left">{student.Roll_No}</TableCell>
                   <TableCell align="left">{student.gender}</TableCell>
                   {selectedSemester && (
                     <>
@@ -221,19 +250,44 @@ export default function EnhancedTable() {
                           type="number"
                           value={student.sgpi}
                           onChange={(e) =>
-                            handleSGPIChange(student.id, e.target.value)
+                            handleSGPIChange(student.Roll_No, e.target.value)
                           }
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <TextField
+                        {/* <TextField
                           type="text"
                           value={student.status}
                           onChange={(e) =>
-                            handleStatusChange(student.id, e.target.value)
+                            handleStatusChange(student.Roll_No, e.target.value)
+                          }
+                        /> */}
+                      <Radio    checked={student.status}  onClick={() =>
+                            handleStatusChange(student.Roll_No, student.status)
+                       }/>
+                      { student.status==true?
+                        <label>Pass</label>: <label>Fail</label>
+                      } 
+                      </TableCell>
+                      { student.status==true?
+                        <label></label>: 
+                     <> <TableCell align="center">
+                        <TextField
+                          type="number"
+                          value={student.NoOfKts}
+                          onChange={(e) =>
+                            handleSGPIChange(student.Roll_No, e.target.value)
                           }
                         />
                       </TableCell>
+                      <TableCell align="center">
+                      <MonthYearSelect value={data.startYear}  />
+                      </TableCell>
+                      <TableCell align="center">
+                      <MonthYearSelect value={data.startYear}  />
+                      </TableCell></>
+                      } 
+
                     </>
                   )}
                 </TableRow>

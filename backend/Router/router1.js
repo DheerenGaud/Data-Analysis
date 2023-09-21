@@ -306,6 +306,7 @@ Router.post("/generate-excel", async(req, res) => {
 });
 
 Router.post("/studentByAcdmicYear",async(req,res)=>{
+  console.log(req.body);
   const {Departname,End_Year}=req.body;
   try {
     const existingAcademicYear = await AcademicYear.findOne({
