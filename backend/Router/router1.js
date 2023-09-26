@@ -181,7 +181,6 @@ Router.post("/semesterData",async(req,res)=>{
         value: Array.from(NotFound),
       });
      }
-        
      const existingAcademicYear = await AcademicYear.findOne({
           Departname: Departname,
           End_Year: End_Year,
