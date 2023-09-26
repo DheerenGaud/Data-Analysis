@@ -167,8 +167,9 @@ Router.delete("/deleteStudent",async(req,res)=>{
   }
 })
 
-Router.put("/semesterData",async(req,res)=>{
-  const {Departname,End_Year,students,SemNo}=req.body;
+Router.post("/semesterData",async(req,res)=>{
+  const {Departname,End_Year,students,SemNo, InternalYear,ExternalYear}=req.body;
+  console.log(InternalYear);
   const NotFound = await FindAll(students);
 
   try {
@@ -187,7 +188,7 @@ Router.put("/semesterData",async(req,res)=>{
         });
 
         if (existingAcademicYear) {
-           await UpdateSem(students,SemNo-1);
+           await UpdateSem(students,SemNo-1,InternalYear,ExternalYear);
           return res.json({ status: "ok", data: "All student Semester updated successfully"});
         }
         else{
@@ -307,7 +308,7 @@ Router.post("/generate-excel", async(req, res) => {
 
 Router.post("/studentByAcdmicYear",async(req,res)=>{
   console.log(req.body);
-  const {Departname,End_Year}=req.body;
+  const {Departname,End_Year,index}=req.body;
   try {
     const existingAcademicYear = await AcademicYear.findOne({
       Departname: Departname,
@@ -315,7 +316,7 @@ Router.post("/studentByAcdmicYear",async(req,res)=>{
     });
 
     if (existingAcademicYear) {
-     const data=  await GetAllStudentData(existingAcademicYear._id);
+     const data=  await GetAllStudentData(existingAcademicYear._id,index-1);
      return res.json({ status: "ok", data:data});
    }
    else{

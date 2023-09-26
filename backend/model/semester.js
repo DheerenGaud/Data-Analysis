@@ -14,13 +14,14 @@ const semesterSchema = mongoose.Schema({
     Status: {
       type: Boolean,
       required: true,
+      default: false,
     },
     InternalYear:{
-      type: Date,
+      type: String,
       required: true,
     },
     ExternalYear:{
-      type: Date,
+      type: String,
       required: true,
     },
     NoOfKts:{

@@ -16,7 +16,7 @@ exports.AddStudent = async (jsonData, Ac_key) => {
       try {
         const semesterData = {
           st_key: Roll_No,
-          Sem: Array(8).fill({ Sgpi: -1, Status: false, InternalYear: new Date(),ExternalYear: new Date() }),
+          Sem: Array(8).fill({ Sgpi: 0, Status: true, InternalYear:" ",ExternalYear: " " }),
           Kt_count: -1,
         };
         await StudentData.create(newStudent);
@@ -57,21 +57,36 @@ exports.DeleteStudent = async (students) => {
   }
 };
 
-exports.GetAllStudentData = async (Ac_key) => {
+exports.GetAllStudentData = async (Ac_key,index) => {
 
   try {
-      const students=await StudentData.find({Ac_key:Ac_key});
-      const simplifiedArray = students.map(item => {
+    const students = await StudentData.find({ Ac_key: Ac_key });
+    const promises = students.map(async (item) => {
+      try {
+        const result = await Semester.findOne({ st_key: item.Roll_No });
         return {
-            Name: item.Name,
-            Roll_No: item.Roll_No
+          Name: item.Name,
+          Roll_No: item.Roll_No,
+          Sgpi: result.Sem[index].Sgpi,
+          Status: result.Sem[index].Status,
+          InternalYear: result.Sem[index].InternalYear,
+          ExternalYear: result.Sem[index].ExternalYear,
+          NoOfKts: result.Sem[index].NoOfKts,
         };
+      } catch (error) {
+        console.error('Error occurred while finding semester:', error);
+        return null; // Return null or a default value for failed fetches
+      }
     });
-      return simplifiedArray
+  
+    const simplifiedArray = await Promise.all(promises);
+    console.log(simplifiedArray);
+    return simplifiedArray;
   } catch (error) {
-    console.log('Error occurred while finding student:', error);
-    throw new Error('Error occurred while adding student');
+    console.error('Error occurred while finding students:', error);
+    throw new Error('Error occurred while adding students');
   }
+  
 };
 
 exports.CheckUnqueStudent = async (jsonData) => {
@@ -112,25 +127,30 @@ exports.FindAll = async (jsonData) => {
   }
 };
 
-exports.UpdateSem = async (students,index) => {
+exports.UpdateSem = async (students,index,InternalYear,ExternalYear) => {
   const errors = [];
-  // console.log(students);
+
   try {
     for (const data of students) {
       const st_key = data.Roll_No
       // const studentSem = await StudentData.findOne(st_key);
       const studentSem = await Semester.findOne({st_key});
-      const {Sgpi,Status,InternalYear,ExternalYear}=data;
-      console.log(Sgpi);
+      const {Sgpi,Status}=data;
+      
+      if(data.InternalYear!==" "){
+        InternalYear=data.InternalYear;
+      }
+      if(data.ExternalYear!==" "){
+        ExternalYear=data.ExternalYear;
+      }
+
       if (studentSem) {
-        // console.log(studentSem);
+    
         const ktVal= studentSem.Kt_count
         const NOkt= data.NoOfKts
-       
-        
-
         const bol=studentSem.Sem[index].Status
         if(!Status){
+           
            if(ktVal==-1){
             studentSem.Kt_count =NOkt;
             studentSem.Sem[index].NoOfKts=NOkt;
@@ -140,8 +160,17 @@ exports.UpdateSem = async (students,index) => {
              studentSem.Sem[index].NoOfKts=NOkt;
            }
            else{
-            studentSem.Sem[index].NoOfKts=NOkt;
-            studentSem.Kt_count =  studentSem.Kt_count+NOkt;
+             if(studentSem.Sem[index].NoOfKts==0){
+               studentSem.Kt_count =  studentSem.Kt_count+NOkt;
+             }
+             studentSem.Sem[index].NoOfKts=NOkt;
+           }
+
+           if(data.InternalYear!==" "){
+            studentSem.Sem[index].InternalYear=InternalYear;
+           }
+           if(data.ExternalYear!==" "){
+            studentSem.Sem[index].ExternalYear=ExternalYear;
            }
         }
         else{
@@ -150,18 +179,24 @@ exports.UpdateSem = async (students,index) => {
               studentSem.Kt_count =  studentSem.Kt_count-studentSem.Sem[index].NoOfKts;
               studentSem.Sem[index].NoOfKts=0
             }
-           }               
+          }             
+            
+          if(studentSem.Sem[index].ExternalYear===" "){
+            studentSem.Sem[index].InternalYear = InternalYear;
+          }
+          if(studentSem.Sem[index].ExternalYear===" "){
+            studentSem.Sem[index].ExternalYear = ExternalYear; 
+          }
+          
         }     
-        
-         studentSem.Sem[index].Sgpi = Sgpi;
          studentSem.Sem[index].Status = Status;
-         studentSem.Sem[index].InternalYear = InternalYear;
-         studentSem.Sem[index].ExternalYear = ExternalYear;
+         studentSem.Sem[index].Sgpi = Sgpi;
          await studentSem.save()
       }
       else{
         errors.push('this student is not exsist  ' +st_key);
       }
+
     }
     if (errors.length > 0) {
       throw new Error(errors.join('\n')); // Throw an error instead of sending a response

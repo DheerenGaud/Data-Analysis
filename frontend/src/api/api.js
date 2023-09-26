@@ -25,7 +25,9 @@ export const studentByAcdmicYear= async(data)=>{
    }
 }
 
-export const ediAcdmicyear= async(data)=>{
+
+export const UpdateSem= async(data)=>{
+  console.log(data);
    try{
         return await axios.post(`${BACKEND_URL}/semesterData`,data)
    }

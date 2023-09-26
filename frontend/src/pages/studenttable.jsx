@@ -1,4 +1,4 @@
-import React, { useState ,useRef} from 'react';
+import React, { useState ,useRef, useEffect} from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
@@ -16,7 +16,10 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
+import dayjs from 'dayjs';
+import { UpdateSem } from '../api/api';
 import MonthYearSelect from '../components/Selectmonthyear';
+
 
 
 
@@ -61,23 +64,30 @@ const headCells = [
     disablePadding: false,
     label: 'Roll No.',
   },
+ 
   {
-    id: 'gender',
-    numeric: false,
-    disablePadding: false,
-    label: '',
-  },
-  {
-    id: 'sgpi',
+    id: 'Sgpi',
     numeric: true,
     disablePadding: false,
-    label: 'SGPI',
+    label: 'Sgpi',
   },
   {
-    id: 'status',
+    id: 'Status',
     numeric: false,
     disablePadding: false,
     label: 'Status',
+  },
+  {
+    id: 'Internal_Year',
+    numeric: false,
+    disablePadding: false,
+    label: 'Internal_Year',
+  },
+  {
+    id: 'External_Year',
+    numeric: false,
+    disablePadding: false,
+    label: 'External_Year',
   },
   {
     id: 'Kt_Count',
@@ -85,28 +95,11 @@ const headCells = [
     disablePadding: false,
     label: 'Kt Count',
   },
-  {
-    id: 'Kt_Count',
-    numeric: false,
-    disablePadding: false,
-    label: 'Internal Year',
-  },
-  {
-    id: 'Kt_Count',
-    numeric: false,
-    disablePadding: false,
-    label: 'External Year',
-  },
 ];
 
-const studentsData = [
-  { id: 1, name: 'Student 1', rollNo: '101', gender: 'Male', sgpi: '', status: '' },
-  { id: 2, name: 'Student 2', rollNo: '102', gender: 'Female', sgpi: '', status: '' },
-  // Add more student data
-];
 
 function EnhancedTableHead(props) {
-  const { order, orderBy, onRequestSort,allStudent} = props;
+  const { order, orderBy, onRequestSort} = props;
 
   return (
     <TableHead>
@@ -144,22 +137,35 @@ EnhancedTableHead.propTypes = {
 };
 
 export default function EnhancedTable(props) {
-  const { allStudent,data} = props;
+  const { allStudent,data,onChange} = props;
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [selectedSemester, setSelectedSemester] = useState('');
-  const addNewAtributeStudents = allStudent.map(student => ({
-    ...student,
-    sgpi: -1,     // You can set the default value for sgpi here
-    status: true,  // You can set the default value for status here
-    InternalYear:'',
-    ExternalYear:'',
-    NoOfKts:0,
-  }));
+  const [semData,setSemData]= useState({ 
+    Departname:data.Departname,
+    End_Year:data.End_Year,
+    students:allStudent,
+    SemNo:-1,
+    InternalYear:" ",
+    ExternalYear:" ",
+  })
   
-  const [students, setStudents] = useState(addNewAtributeStudents);
+  const [students, setStudents] = useState([]);
+  useEffect(()=>{
+    setStudents(allStudent)
+  },[allStudent])
+
+  const semDataRef = useRef(semData);
+  
+  // const addNewAtributeStudents = allStudent.map(student => ({
+  //   ...student,
+  //   Sgpi: null,     
+  //   Status: true,  
+  //   NoOfKts:0,
+  // }));
+ 
+
 
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -176,40 +182,78 @@ export default function EnhancedTable(props) {
     setPage(0);
   };
 
-  const handleSemesterChange = (event) => {
-    const newSemester = event.target.value;
-    setSelectedSemester(newSemester);
+  const handleSemesterChange =async (e) => {
+    semDataRef.current.SemNo = e.target.value;
+      setSemData({ ...semDataRef.current });
+      await onChange(e.target.value);
+      
+    
+  };
+  const onChangeintrY = (date) => {
+    const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
+    semDataRef.current.InternalYear = formattedDate;
+    setSemData({ ...semDataRef.current });
+   
+  };
+  const onChangeextrY = (date) => {
+    const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
+    semDataRef.current.ExternalYear = formattedDate;
+    setSemData({ ...semDataRef.current });
+  
   };
 
-  const handleSGPIChange = (studentId, value) => {
-    const updatedStudents = students.map((student) =>
-      student.Roll_No === studentId ? { ...student, sgpi: value } : student
-    );
-    setStudents(updatedStudents);
+  const handleSgpiChange = (studentId, value,name) => {
+    const numericValue = parseFloat(value);
+
+  const updatedStudents = students.map((student) =>
+    student.Roll_No === studentId ? { ...student, [name]: numericValue } : student
+  );
+
+  setStudents(updatedStudents);
   };
 
   const handleStatusChange = (studentId, value) => {
-    console.log(value);
+    
     const updatedStudents = students.map((student) =>
-      student.Roll_No === studentId ? { ...student, status: !value } : student
+      student.Roll_No === studentId ? { ...student, Status: !value } : student
     );
-   
     setStudents(updatedStudents);
   };
+  
+  const handlDateChangeIn = (studentId, date) => {
+    const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
+  const updatedStudents = students.map((student) =>
+  student.Roll_No === studentId ? { ...student, InternalYear: formattedDate } : student
+   );
 
-  const handleSaveData = () => {
-    
-    const p={ Departname:data.Departname,
-    End_Year: data.End_Year,
-  students:students,
-  SemNo:selectedSemester}
-  console.log(p);
+setStudents(updatedStudents);
   };
+  const handlDateChangeEx = (studentId, date) => {
+    const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
+  const updatedStudents = students.map((student) =>
+  student.Roll_No === studentId ? { ...student, ExternalYear: formattedDate } : student
+   );
 
+setStudents(updatedStudents);
+  };
+  
 
+  const handleSaveData = async () => {
+    console.log(semDataRef.current);
+    semDataRef.current.students = students;
+     setSemData({ ...semDataRef.current });  
+    console.log(semDataRef.current);
+    try {
+      const x = await UpdateSem(semDataRef.current);
+      console.log(x.data);
+    } catch (error) {
+      console.log(error);
+    }
 
-
+  };
+  
   const visibleRows = React.useMemo(
+
     () =>
       stableSort(students, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
@@ -220,7 +264,7 @@ export default function EnhancedTable(props) {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <SemesterSelect value={selectedSemester} onChange={handleSemesterChange} />
+      <SemesterSelect value={semData.SemNo} onChange={handleSemesterChange} extrY={semData.ExternalYear} onChangeintrY={onChangeintrY}  onChangeextrY={onChangeextrY} intrY={semData.InternalYear} />
       <Paper sx={{ width: '100%', mb: 2, pl: 2 }}>
         <TableContainer>
           <Table
@@ -242,54 +286,53 @@ export default function EnhancedTable(props) {
                 >
                   <TableCell align="left">{student.Name}</TableCell>
                   <TableCell align="left">{student.Roll_No}</TableCell>
-                  <TableCell align="left">{student.gender}</TableCell>
-                  {selectedSemester && (
+                  {/* <TableCell align="left">{student.gender}</TableCell> */}
+             
                     <>
                       <TableCell align="center">
                         <TextField
+                          name='Sgpi'
                           type="number"
-                          value={student.sgpi}
+                          value={student.Sgpi}
                           onChange={(e) =>
-                            handleSGPIChange(student.Roll_No, e.target.value)
+                            handleSgpiChange(student.Roll_No,e.target.value,e.target.name)
                           }
                         />
                       </TableCell>
                       <TableCell align="center">
-                        {/* <TextField
-                          type="text"
-                          value={student.status}
-                          onChange={(e) =>
-                            handleStatusChange(student.Roll_No, e.target.value)
-                          }
-                        /> */}
-                      <Radio    checked={student.status}  onClick={() =>
-                            handleStatusChange(student.Roll_No, student.status)
+                      
+                      <Radio    checked={student.Status}  onClick={() =>
+                            handleStatusChange(student.Roll_No,student.Status)
                        }/>
-                      { student.status==true?
+                          
+                      { student.Status==true?
                         <label>Pass</label>: <label>Fail</label>
                       } 
                       </TableCell>
-                      { student.status==true?
+                      <TableCell align="center">
+                      <MonthYearSelect value={student.InternalYear} onChange={(date)=>handlDateChangeIn(student.Roll_No,date)}  />
+                      </TableCell>
+                      <TableCell align="center">
+                      <MonthYearSelect value={student.ExternalYear}   onChange={(date)=>handlDateChangeEx(student.Roll_No,date)}/>
+                      </TableCell>
+                      { student.Status==true?
                         <label></label>: 
                      <> <TableCell align="center">
                         <TextField
+                          name='NoOfKts'
                           type="number"
                           value={student.NoOfKts}
                           onChange={(e) =>
-                            handleSGPIChange(student.Roll_No, e.target.value)
+                            handleSgpiChange(student.Roll_No,e.target.value,e.target.name)
                           }
                         />
                       </TableCell>
-                      <TableCell align="center">
-                      <MonthYearSelect value={data.startYear}  />
-                      </TableCell>
-                      <TableCell align="center">
-                      <MonthYearSelect value={data.startYear}  />
-                      </TableCell></>
+                   
+                      </>
                       } 
 
                     </>
-                  )}
+               
                 </TableRow>
               ))}
             </TableBody>

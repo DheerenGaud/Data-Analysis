@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Grid, Button, Typography, Paper } from '@mui/material';
 import DepartmentSelect from '../components/Selectdepartment';
@@ -12,7 +12,6 @@ import {studentByAcdmicYear} from "../api/api"
 
 
 export default function SelectBatch() {
-
       
   const [open, setOpen] = React.useState(false);
 
@@ -30,9 +29,12 @@ export default function SelectBatch() {
 
   const [data, setData] = useState({
     Departname: '',
-    startYear: null,
     End_Year: null,
+    startYear:null,
+    index:-1
   });
+
+  const semRef=useRef(data);
 
   const handleDepartmentChange = (event) => {
     const newDepartment = event.target.value;
@@ -57,14 +59,30 @@ export default function SelectBatch() {
       handleBatchSubmit();
     }
   };
+  const handlesemIndex = async(index) => {
+    semRef.current=data
+    semRef.current.index=index;
+    setData({...semRef.current});
+    console.log(semRef.current);
+    try {
+      const x= await studentByAcdmicYear(semRef.current)
+      if(x.data.status=="ok"){
+        console.log(x.data);
+        setStudent(x.data.data)
+      }
+    } catch (error) {
+      
+    }
+  };
 
   const handleBatchSubmit = async() => {
-    const x= await studentByAcdmicYear(data)
-    if(x.data.status=="ok"){
-      console.log(x.data);
-      setSubmitted(true);
-      setStudent(x.data.data)
-    }
+    // const x= await studentByAcdmicYear(data)
+    // if(x.data.status=="ok"){
+    //   console.log(x.data);
+    //   setSubmitted(true);
+    //   setStudent(x.data.data)
+    // }
+    setSubmitted(true);
   };
 
 
@@ -80,7 +98,7 @@ export default function SelectBatch() {
           <Box component="main" sx={{ flexGrow: 1, p: 15}}>
           <Grid container justifyContent="center">
           <Grid item xs={12}>
-          <StudentTable allStudent={students} data={data}></StudentTable>
+          <StudentTable allStudent={students} data={data} onChange={handlesemIndex}></StudentTable>
           </Grid>
           </Grid>
           </Box>

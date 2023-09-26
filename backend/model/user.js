@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const UserSecham = mongoose.Schema({
- 
-  Name: {
+
+  Fname: {
     type: String,
     required: true,
   },
-  Surname: {
+  Lname: {
     type: String,
     required: true,
   },
@@ -18,9 +18,13 @@ const UserSecham = mongoose.Schema({
     type: Date,
     required: true,
   },
-  Email: {
+  email: {
     type: String,
     required: true,
+  },
+  varified: {
+    type: Boolean,
+    default:false,
   },
 });
 // Ac_model: {
