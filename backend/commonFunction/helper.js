@@ -2,6 +2,7 @@ const AcademicYear = require('../model/acdemicYear');
 const StudentData = require('../model/studentData');
 const Semester = require('../model/semester');
 
+
 exports.AddStudent = async (jsonData, Ac_key) => {
   const errors = [];
   try {
@@ -15,7 +16,7 @@ exports.AddStudent = async (jsonData, Ac_key) => {
       try {
         const semesterData = {
           st_key: Roll_No,
-          Sem: Array(8).fill({ Sgpi: -1, Status: false, InternalYear: new Date(),ExternalYear: new Date() }),
+          Sem: Array(8).fill({ Sgpi: 0, Status: true, InternalYear:" ",ExternalYear: " " }),
           Kt_count: -1,
         };
         await StudentData.create(newStudent);
@@ -36,6 +37,7 @@ exports.AddStudent = async (jsonData, Ac_key) => {
     throw new Error('Error occurred while adding student');
   }
 };
+
 exports.DeleteStudent = async (students) => {
   
   try {
@@ -53,6 +55,38 @@ exports.DeleteStudent = async (students) => {
     console.log('Error occurred while Dleting student:', error);
     throw new Error('Error occurred while adding student');
   }
+};
+
+exports.GetAllStudentData = async (Ac_key,index) => {
+
+  try {
+    const students = await StudentData.find({ Ac_key: Ac_key });
+    const promises = students.map(async (item) => {
+      try {
+        const result = await Semester.findOne({ st_key: item.Roll_No });
+        return {
+          Name: item.Name,
+          Roll_No: item.Roll_No,
+          Sgpi: result.Sem[index].Sgpi,
+          Status: result.Sem[index].Status,
+          InternalYear: result.Sem[index].InternalYear,
+          ExternalYear: result.Sem[index].ExternalYear,
+          NoOfKts: result.Sem[index].NoOfKts,
+        };
+      } catch (error) {
+        console.error('Error occurred while finding semester:', error);
+        return null; // Return null or a default value for failed fetches
+      }
+    });
+  
+    const simplifiedArray = await Promise.all(promises);
+    console.log(simplifiedArray);
+    return simplifiedArray;
+  } catch (error) {
+    console.error('Error occurred while finding students:', error);
+    throw new Error('Error occurred while adding students');
+  }
+  
 };
 
 exports.CheckUnqueStudent = async (jsonData) => {
@@ -73,6 +107,7 @@ exports.CheckUnqueStudent = async (jsonData) => {
     throw new Error('Error occurred while checking unique students');
   }
 };
+
 exports.FindAll = async (jsonData) => {
   try {
     const NotFound = new Set();
@@ -92,45 +127,76 @@ exports.FindAll = async (jsonData) => {
   }
 };
 
-
-exports.UpdateSem = async (students,index) => {
+exports.UpdateSem = async (students,index,InternalYear,ExternalYear) => {
   const errors = [];
-  // console.log(students);
+
   try {
     for (const data of students) {
       const st_key = data.Roll_No
       // const studentSem = await StudentData.findOne(st_key);
       const studentSem = await Semester.findOne({st_key});
-      const {Sgpi,Status,InternalYear,ExternalYear}=data;
-      console.log(Sgpi);
+      const {Sgpi,Status}=data;
+      
+      if(data.InternalYear!==" "){
+        InternalYear=data.InternalYear;
+      }
+      if(data.ExternalYear!==" "){
+        ExternalYear=data.ExternalYear;
+      }
+
       if (studentSem) {
-        // console.log(studentSem);
+    
         const ktVal= studentSem.Kt_count
+        const NOkt= data.NoOfKts
+        const bol=studentSem.Sem[index].Status
         if(!Status){
-           const x=  studentSem.Sem[index].Sgpi
+           
            if(ktVal==-1){
-            studentSem.Kt_count = 1;
+            studentSem.Kt_count =NOkt;
+            studentSem.Sem[index].NoOfKts=NOkt;
            }
-           else if(x===-1){
-            console.log("hello");
-            studentSem.Kt_count =  studentSem.Kt_count+1;
+           else if(studentSem.Sem[index].NoOfKts>NOkt){
+             studentSem.Kt_count=ktVal-(studentSem.Sem[index].NoOfKts-NOkt);
+             studentSem.Sem[index].NoOfKts=NOkt;
+           }
+           else{
+             if(studentSem.Sem[index].NoOfKts==0){
+               studentSem.Kt_count =  studentSem.Kt_count+NOkt;
+             }
+             studentSem.Sem[index].NoOfKts=NOkt;
+           }
+
+           if(data.InternalYear!==" "){
+            studentSem.Sem[index].InternalYear=InternalYear;
+           }
+           if(data.ExternalYear!==" "){
+            studentSem.Sem[index].ExternalYear=ExternalYear;
            }
         }
         else{
-           if(ktVal!==-1){
-            studentSem.Kt_count =  studentSem.Kt_count-1;
-           }
-        }
-        
-         studentSem.Sem[index].Sgpi = Sgpi;
+           if(ktVal!==-1){  
+            if(!bol){
+              studentSem.Kt_count =  studentSem.Kt_count-studentSem.Sem[index].NoOfKts;
+              studentSem.Sem[index].NoOfKts=0
+            }
+          }             
+            
+          if(studentSem.Sem[index].ExternalYear===" "){
+            studentSem.Sem[index].InternalYear = InternalYear;
+          }
+          if(studentSem.Sem[index].ExternalYear===" "){
+            studentSem.Sem[index].ExternalYear = ExternalYear; 
+          }
+          
+        }     
          studentSem.Sem[index].Status = Status;
-         studentSem.Sem[index].InternalYear = InternalYear;
-         studentSem.Sem[index].ExternalYear = ExternalYear;
+         studentSem.Sem[index].Sgpi = Sgpi;
          await studentSem.save()
       }
       else{
         errors.push('this student is not exsist  ' +st_key);
       }
+
     }
     if (errors.length > 0) {
       throw new Error(errors.join('\n')); // Throw an error instead of sending a response
@@ -140,3 +206,5 @@ exports.UpdateSem = async (students,index) => {
     throw new Error('Error occurred while checking unique students');
   }
 };
+
+

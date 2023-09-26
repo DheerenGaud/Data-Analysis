@@ -20,7 +20,7 @@ const semesterSchema=mongoose.Schema({
           required: true,
         },
         RepetedAt: {
-            type: Date,
+            type: String,
             required: true,
           },
       }],

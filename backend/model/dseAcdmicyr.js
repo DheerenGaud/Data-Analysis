@@ -6,11 +6,11 @@ const dceAcademicYearSchema=mongoose.Schema({
         required: true,
       },
       Start_Year: {
-        type: Date,
+        type: String,
         required: true,
       },
       End_Year: {
-        type: Date,
+        type: String,
         required: true,
       },
       No_of_student: {

@@ -9,24 +9,25 @@ const semesterSchema = mongoose.Schema({
     Sgpi: {
       type: Number,
       required: true,
-<<<<<<< HEAD
-      default:0.00,
-=======
       default: -1,
->>>>>>> 07091f7145ba67f265ab3e8570992bbf196fbc93
     },
     Status: {
       type: Boolean,
       required: true,
-      default:false,
+      default: false,
     },
     InternalYear:{
-      type: Date,
+      type: String,
       required: true,
     },
     ExternalYear:{
-      type: Date,
+      type: String,
       required: true,
+    },
+    NoOfKts:{
+      type: Number,
+      required: true,
+      default: 0,
     }
   }],
   Kt_count: {

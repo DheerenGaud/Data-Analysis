@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyparser = require("body-parser");
 const Router1=require("./Router/router1")
+const Router2=require("./Router/router2.js")
 const mongoose = require("mongoose");
 // const connected = require("./db/db")
 
@@ -23,9 +24,10 @@ const connected = async () => {
        }
   };
         
-        connected();
+connected();
 
 app.use("/",Router1);
+app.use("/auth",Router2);
 
 
 app.listen(9000,()=>{
