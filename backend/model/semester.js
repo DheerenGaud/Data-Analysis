@@ -24,7 +24,12 @@ const semesterSchema = mongoose.Schema({
       type: String,
       required: true,
     },
-    NoOfKts:{
+    InternalKt:{
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    ExternalKt:{
       type: Number,
       required: true,
       default: 0,

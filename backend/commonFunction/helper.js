@@ -5,6 +5,7 @@ const Semester = require('../model/semester');
 
 exports.AddStudent = async (jsonData, Ac_key) => {
   const errors = [];
+  console.log(jsonData);
   try {
     for (const data of jsonData) {
       const { Name, Roll_No } = data;
@@ -16,7 +17,7 @@ exports.AddStudent = async (jsonData, Ac_key) => {
       try {
         const semesterData = {
           st_key: Roll_No,
-          Sem: Array(8).fill({ Sgpi: 0, Status: true, InternalYear:" ",ExternalYear: " " }),
+          Sem: Array(8).fill({ Sgpi: 0, Status: true, InternalYear:" ",ExternalYear: " "}),
           Kt_count: -1,
         };
         await StudentData.create(newStudent);
@@ -71,7 +72,9 @@ exports.GetAllStudentData = async (Ac_key,index) => {
           Status: result.Sem[index].Status,
           InternalYear: result.Sem[index].InternalYear,
           ExternalYear: result.Sem[index].ExternalYear,
-          NoOfKts: result.Sem[index].NoOfKts,
+          InternalKt: result.Sem[index].InternalKt,
+          ExternalKt: result.Sem[index].ExternalKt,
+        
         };
       } catch (error) {
         console.error('Error occurred while finding semester:', error);
@@ -80,7 +83,7 @@ exports.GetAllStudentData = async (Ac_key,index) => {
     });
   
     const simplifiedArray = await Promise.all(promises);
-    console.log(simplifiedArray);
+    // console.log(simplifiedArray);
     return simplifiedArray;
   } catch (error) {
     console.error('Error occurred while finding students:', error);
@@ -130,12 +133,16 @@ exports.FindAll = async (jsonData) => {
 exports.UpdateSem = async (students,index,InternalYear,ExternalYear) => {
   const errors = [];
 
+  const a=InternalYear;
+  const b=ExternalYear;
   try {
     for (const data of students) {
       const st_key = data.Roll_No
       // const studentSem = await StudentData.findOne(st_key);
       const studentSem = await Semester.findOne({st_key});
       const {Sgpi,Status}=data;
+      InternalYear=a;
+      ExternalYear=b;
       
       if(data.InternalYear!==" "){
         InternalYear=data.InternalYear;
@@ -147,23 +154,29 @@ exports.UpdateSem = async (students,index,InternalYear,ExternalYear) => {
       if (studentSem) {
     
         const ktVal= studentSem.Kt_count
-        const NOkt= data.NoOfKts
+        const inteKt=data.InternalKt;
+        const extrKt=data.ExternalKt;
+        const NOkt= inteKt+extrKt;
         const bol=studentSem.Sem[index].Status
+        const sum=studentSem.Sem[index].InternalKt+ studentSem.Sem[index].ExternalKt;
         if(!Status){
            
            if(ktVal==-1){
             studentSem.Kt_count =NOkt;
-            studentSem.Sem[index].NoOfKts=NOkt;
+            studentSem.Sem[index].InternalKt=inteKt;
+            studentSem.Sem[index].ExternalKt=extrKt;
            }
-           else if(studentSem.Sem[index].NoOfKts>NOkt){
-             studentSem.Kt_count=ktVal-(studentSem.Sem[index].NoOfKts-NOkt);
-             studentSem.Sem[index].NoOfKts=NOkt;
+           else if(sum>NOkt){
+             studentSem.Kt_count=ktVal-( studentSem.Sem[index].ExternalKt+studentSem.Sem[index].InternalKt-NOkt);
+             studentSem.Sem[index].InternalKt=inteKt;
+             studentSem.Sem[index].ExternalKt=extrKt;
            }
            else{
-             if(studentSem.Sem[index].NoOfKts==0){
+             if(sum==0){
                studentSem.Kt_count =  studentSem.Kt_count+NOkt;
              }
-             studentSem.Sem[index].NoOfKts=NOkt;
+             studentSem.Sem[index].InternalKt=inteKt;
+             studentSem.Sem[index].ExternalKt=extrKt;
            }
 
            if(data.InternalYear!==" "){
@@ -176,8 +189,9 @@ exports.UpdateSem = async (students,index,InternalYear,ExternalYear) => {
         else{
            if(ktVal!==-1){  
             if(!bol){
-              studentSem.Kt_count =  studentSem.Kt_count-studentSem.Sem[index].NoOfKts;
-              studentSem.Sem[index].NoOfKts=0
+              studentSem.Kt_count =  studentSem.Kt_count-sum;
+              studentSem.Sem[index].InternalKt=inteKt;
+              studentSem.Sem[index].ExternalKt=extrKt;
             }
           }             
             

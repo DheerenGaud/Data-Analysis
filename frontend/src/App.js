@@ -7,6 +7,7 @@ import Findyear from './pages/findyear';
 import Uploaddata from './pages/uploaddata';
 import Addsem from './pages/addsem';
 import StudentTable from './pages/studenttable';
+import DownloadData from './pages/downloaddata';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/" exact element={<Home />}></Route>
           <Route path="/addbatch" exact element={<Addbatch />}></Route>
           <Route path="/editbatch" exact element={<Editbatch />}></Route>
+          <Route path="/downloaddata" exact element={<DownloadData />}></Route>
           <Route path="/studenttable" exact element={<StudentTable />}></Route>
           <Route path="/addsem" exact element={<Addsem />}></Route>
           <Route path="/uploaddata" exact element={<Uploaddata />}></Route>

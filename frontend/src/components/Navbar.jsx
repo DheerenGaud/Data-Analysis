@@ -25,6 +25,7 @@ import MailIcon from '@mui/icons-material/Mail';
 import handleDrawerOpen from './Appbar';
 import Appbar from './Appbar';
 import {useNavigate} from "react-router-dom"
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const drawerWidth = 240;
 
@@ -146,6 +147,26 @@ export default function Navbar({ open, handleDrawerClose }) {
               <EditIcon />
               </ListItemIcon>
               <ListItemText primary="Edit Batch" sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding sx={{ display: 'block' }} onClick={()=> {navigate("/downloaddata")}}>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? 'initial' : 'center',
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : 'auto',
+                  justifyContent: 'center',
+                }}
+              >
+              <FileDownloadIcon />
+              </ListItemIcon>
+              <ListItemText primary="Download Batch Data" sx={{ opacity: open ? 1 : 0 }} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding sx={{ display: 'block' }} onClick={()=> {navigate("/findyear")}}>

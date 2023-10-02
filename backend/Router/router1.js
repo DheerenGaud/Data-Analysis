@@ -1,7 +1,7 @@
 const express =require("express");
 const Router=express.Router();
 const xlsx =require("xlsx")
-
+const fs = require('fs');
 const ExcelJS = require("exceljs");
 const multer =require("multer")
 
@@ -169,7 +169,7 @@ Router.delete("/deleteStudent",async(req,res)=>{
 
 Router.post("/semesterData",async(req,res)=>{
   const {Departname,End_Year,students,SemNo, InternalYear,ExternalYear}=req.body;
-  console.log(InternalYear);
+ 
   const NotFound = await FindAll(students);
 
   try {
@@ -274,12 +274,21 @@ Router.post("/generate-excel", async(req, res) => {
     
       stude.Sem.forEach(semester => {
         if (semester.Status === true) {
-          rowData.push(months[semester.InternalYear.getMonth()-1] + " "+ semester.InternalYear.getFullYear()); // Add internal year
-          rowData.push(months[semester.ExternalYear.getMonth()-1] + " "+ semester.ExternalYear.getFullYear()); // Add external year
+          rowData.push(semester.InternalYear); // Add internal year
+          rowData.push(semester.ExternalYear); // Add external year
         } else {
-          
-          rowData.push("Kt "+stude.Kt_count);
-          rowData.push("Kt "+stude.Kt_count); // If status is not pass, leave cells empty
+          if(semester.InternalYear!==" "){
+            rowData.push(semester.InternalYear);
+          }
+          else{
+            rowData.push("Kt "+stude.Kt_count);
+          }
+          if(semester.ExternalYear!==" "){
+            rowData.push(semester.ExternalYear);
+          }
+          else{
+            rowData.push("Kt "+stude.Kt_count); // If status is not pass, leave cells empty
+          }
         }
       });
     
@@ -291,14 +300,19 @@ Router.post("/generate-excel", async(req, res) => {
     }
 
     // Save the workbook to a buffer
-    const excelBuffer = await workbook.xlsx.writeBuffer();
-
+    const excelFilename = 'student_marks.xlsx';
+    await workbook.xlsx.writeFile(excelFilename);
+  
     // Set response headers
-    res.setHeader("Content-Disposition", "attachment; filename=student_marks.xlsx");
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-    // Send the Excel buffer as the response
-    res.send(excelBuffer);
+    res.setHeader('Content-Disposition', `attachment; filename=${excelFilename}`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  
+    // Stream the saved file to the response
+    const fileStream = fs.createReadStream(excelFilename);
+    fileStream.pipe(res);
+  
+    // Delete the local file after streaming it
+    fs.unlinkSync(excelFilename);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
@@ -306,7 +320,7 @@ Router.post("/generate-excel", async(req, res) => {
 });
 
 Router.post("/studentByAcdmicYear",async(req,res)=>{
-  console.log(req.body);
+ 
   const {Departname,End_Year,index}=req.body;
   try {
     const existingAcademicYear = await AcademicYear.findOne({

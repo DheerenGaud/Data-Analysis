@@ -1,22 +1,18 @@
 import React, { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Box, Grid, Button, Typography, Paper } from '@mui/material';
 import DepartmentSelect from '../components/Selectdepartment';
 import MonthYearSelect from '../components/Selectmonthyear';
-import Navigationbar from '../components/Navbar';
 import Appbar from '../components/Appbar';
 import Navbar from '../components/Navbar';
 import dayjs from 'dayjs';
-import StudentTable from './studenttable';
-import {studentByAcdmicYear} from "../api/api"
+
+import {DownlodExcel} from "../api/api"
 
 
-export default function SelectBatch() {
+export default function Downloaddata() {
       
   const [open, setOpen] = React.useState(false);
 
-  const [submitted, setSubmitted] = useState(false);
-  const [students,setStudent]=useState([]);
   
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -30,11 +26,9 @@ export default function SelectBatch() {
   const [data, setData] = useState({
     Departname: '',
     End_Year: null,
-    startYear:null,
-    index:-1
   });
 
-  const semRef=useRef(data);
+
 
   const handleDepartmentChange = (event) => {
     const newDepartment = event.target.value;
@@ -49,7 +43,6 @@ export default function SelectBatch() {
     console.log(formattedDate);
     setData((prevData) => ({
       ...prevData,
-      Start_Year: formattedDate, // Update Start_YearMonth with the formatted date
       End_Year: dayjs(date).add(4, 'year').format('MMMM YYYY'), // Calculate and format End_YearMonth
     }));
   };
@@ -59,54 +52,44 @@ export default function SelectBatch() {
       handleBatchSubmit();
     }
   };
-  const handlesemIndex = async(index) => {
-    semRef.current=data
-    semRef.current.index=index;
-    setData({...semRef.current});
-    console.log(semRef.current);
-    try {
-      const x= await studentByAcdmicYear(semRef.current)
-      if(x.data.status=="ok"){
-        console.log(x.data);
-        setStudent(x.data.data)
-      }
-    } catch (error) {
-      
-    }
-  };
+ 
 
-  const handleBatchSubmit = async() => {
-    // const x= await studentByAcdmicYear(data)
-    // if(x.data.status=="ok"){
-    //   console.log(x.data);
-    //   setSubmitted(true);
-    //   setStudent(x.data.data)
-    // }
-    setSubmitted(true);
+  // const handleBatchSubmit = async() => {
+  //   const x= await DownlodExcel(data);
+  // };
+  const handleBatchSubmit = async () => {
+    try {
+      const response = await DownlodExcel(data);
+      
+      // Create a Blob from the response data
+      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      // Create a temporary URL for the Blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary <a> element to trigger the download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'student_marks.xlsx';
+      
+      // Trigger a click on the <a> element to start the download
+      a.click();
+      
+      // Release the temporary URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading Excel file:', error);
+    }
   };
 
 
   return (
     
-    <Grid container justifyContent="center" spacing={2} sx={{ overflow:"hidden" }}>
+    <Grid container justifyContent="center" spacing={2}>
   
-      {submitted ? ( 
-        <Box sx={{ display: 'flex'}}>
-
-          <Appbar pageName='Edit batch' open={open} handleDrawerOpen={handleDrawerOpen} />
-          <Navbar open={open} handleDrawerClose={handleDrawerClose} />
-          <Box component="main" sx={{ flexGrow: 1, p: 15, width:"80vw"}}>
-          
-        
-          <StudentTable allStudent={students} data={data} onChange={handlesemIndex}></StudentTable>
-   
-      
-          </Box>
-
-        </Box>
-        ) : (
+  
           <Box sx={{ display: 'flex' }}>
-  <Appbar pageName='Edit batch' open={open} handleDrawerOpen={handleDrawerOpen} />
+  <Appbar pageName='Download Data' open={open} handleDrawerOpen={handleDrawerOpen} />
   <Navbar open={open} handleDrawerClose={handleDrawerClose} />
   <Box component="main" sx={{ flexGrow: 1, p: 15 }}>
     <Typography variant="h5" align="center" gutterBottom>
@@ -123,7 +106,7 @@ export default function SelectBatch() {
           </Grid>
           <Grid item xs={12} sm={12} md={12}>
             <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
-              Submit
+              Download
             </Button>
           </Grid>
         </Grid>
@@ -131,7 +114,7 @@ export default function SelectBatch() {
     </Box>
   </Box>
 </Box>
-        )}
+     
 
     </Grid>
   );

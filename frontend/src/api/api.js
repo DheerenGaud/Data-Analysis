@@ -36,3 +36,13 @@ export const UpdateSem= async(data)=>{
          console.log("error is occur in adding new acdemic year by api")
    }
 }
+export const DownlodExcel= async(data)=>{
+  console.log(data);
+   try{
+        return await axios.post(`${BACKEND_URL}/generate-excel`,data)
+   }
+   catch(err){
+       console.log(err);
+         console.log("error is occur in adding new acdemic year by api")
+   }
+}
