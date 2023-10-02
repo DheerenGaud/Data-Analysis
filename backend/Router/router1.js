@@ -274,12 +274,21 @@ Router.post("/generate-excel", async(req, res) => {
     
       stude.Sem.forEach(semester => {
         if (semester.Status === true) {
-          rowData.push(months[semester.InternalYear.getMonth()-1] + " "+ semester.InternalYear.getFullYear()); // Add internal year
-          rowData.push(months[semester.ExternalYear.getMonth()-1] + " "+ semester.ExternalYear.getFullYear()); // Add external year
+          rowData.push(semester.InternalYear); // Add internal year
+          rowData.push(semester.ExternalYear); // Add external year
         } else {
-          
-          rowData.push("Kt "+stude.Kt_count);
-          rowData.push("Kt "+stude.Kt_count); // If status is not pass, leave cells empty
+          if(semester.InternalYear!==" "){
+            rowData.push(semester.InternalYear);
+          }
+          else{
+            rowData.push("Kt "+stude.Kt_count);
+          }
+          if(semester.ExternalYear!==" "){
+            rowData.push(semester.ExternalYear);
+          }
+          else{
+            rowData.push("Kt "+stude.Kt_count); // If status is not pass, leave cells empty
+          }
         }
       });
     

@@ -1,6 +1,5 @@
 import React, { useState ,useRef, useEffect} from 'react';
 import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -9,16 +8,15 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import Paper from '@mui/material/Paper';
 import { visuallyHidden } from '@mui/utils';
 import SemesterSelect from '../components/Selectsemester';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import dayjs from 'dayjs';
 import { UpdateSem } from '../api/api';
 import MonthYearSelect from '../components/Selectmonthyear';
+import { Box, Grid, Button, Typography, Paper } from '@mui/material';
 
 
 
@@ -81,13 +79,13 @@ const headCells = [
     id: 'Internal_Year',
     numeric: false,
     disablePadding: false,
-    label: 'Internal_Year',
+    label: 'Internal Year',
   },
   {
     id: 'External_Year',
     numeric: false,
     disablePadding: false,
-    label: 'External_Year',
+    label: 'External Year',
   },
   {
     id: 'Kt_Count',
@@ -108,7 +106,8 @@ function EnhancedTableHead(props) {
           <TableCell
             key={headCell.id}
             align={'center'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
+            width={'5vw'}
+           
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
@@ -262,19 +261,142 @@ setStudents(updatedStudents);
     [order, orderBy, page, rowsPerPage, students]
   );
 
-  return (
-    <Box sx={{ width: '100%' }}>
-      <SemesterSelect value={semData.SemNo} onChange={handleSemesterChange} extrY={semData.ExternalYear} onChangeintrY={onChangeintrY}  onChangeextrY={onChangeextrY} intrY={semData.InternalYear} />
-      <Paper sx={{ width: '100%', mb: 2, pl: 2 }}>
-        <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-          >
+//   return (
+//     <>
+//     <Box sx={{ width: '100%', justifyContent: 'flex-start' }}>
+//       <Box sx={{ display: 'flex' }}>
+    
+//         <Grid container spacing={1} alignItems="center">
+
+//           <SemesterSelect value={semData.SemNo} onChange={handleSemesterChange} intrY={semData.InternalYear} onChangeintrY={onChangeintrY} extrY={semData.ExternalYear} onChangeextrY={onChangeextrY} alignContent="flex-start"/>
+
+//         </Grid>
+     
+//       </Box>
+//       {/* <Grid container spacing={1} alignItems="center">
+//           <Grid item xs={12} md={6}>
+//           <SemesterSelect value={semData.SemNo} onChange={handleSemesterChange} extrY={semData.ExternalYear} onChangeintrY={onChangeintrY}  onChangeextrY={onChangeextrY} intrY={semData.InternalYear} alignContent="flex-start"/>
+//           </Grid>
+//       </Grid>     */}
+//     </Box>
+//     <Box sx={{ width: '100%', justifyContent: 'flex-start' }}>  
+//       <Paper >
+//       <TableContainer>
+//           <Table
+//             sx={{ minWidth: 750, width: '90vw'}}
+//             aria-labelledby="tableTitle"
+//           >
+//             <EnhancedTableHead
+//               order={order}
+//               orderBy={orderBy}
+//               onRequestSort={handleRequestSort}
+//             />
+//             <TableBody>
+//               {visibleRows.map((student) => (
+//                 <TableRow
+//                   hover
+//                   tabIndex={-1}
+//                   key={student.Name}
+//                   sx={{ cursor: 'pointer' }}
+//                 >
+//                   <TableCell align="left">{student.Name}</TableCell>
+//                   <TableCell align="left">{student.Roll_No}</TableCell>
+//                   {/* <TableCell align="left">{student.gender}</TableCell> */}
+             
+//                     <>
+//                       <TableCell align="center">
+//                         <TextField
+//                           name='Sgpi'
+//                           type="number"
+//                           value={student.Sgpi}
+//                           onChange={(e) =>
+//                             handleSgpiChange(student.Roll_No,e.target.value,e.target.name)
+//                           }
+//                         />
+//                       </TableCell>
+//                       <TableCell align="center">
+                      
+//                       <Radio    checked={student.Status}  onClick={() =>
+//                             handleStatusChange(student.Roll_No,student.Status)
+//                        }/>
+                          
+//                       { student.Status==true?
+//                         <label>Pass</label>: <label>Fail</label>
+//                       } 
+//                       </TableCell>
+//                       <TableCell align="center">
+//                       <MonthYearSelect value={student.InternalYear} onChange={(date)=>handlDateChangeIn(student.Roll_No,date)}  />
+//                       </TableCell>
+//                       <TableCell align="center">
+//                       <MonthYearSelect value={student.ExternalYear}   onChange={(date)=>handlDateChangeEx(student.Roll_No,date)}/>
+//                       </TableCell>
+//                       { student.Status==true?
+//                         <label></label>: 
+//                      <> <TableCell align="center">
+//                         <TextField
+//                           name='NoOfKts'
+//                           type="number"
+//                           value={student.NoOfKts}
+//                           onChange={(e) =>
+//                             handleSgpiChange(student.Roll_No,e.target.value,e.target.name)
+//                           }
+//                         />
+//                       </TableCell>
+                   
+//                       </>
+//                       } 
+
+//                     </>
+               
+//                 </TableRow>
+//               ))}
+//             </TableBody>
+//           </Table>
+//         </TableContainer>
+//         <TablePagination
+//           rowsPerPageOptions={[5, 10, 25]}
+//           component="div"
+//           count={students.length}
+//           rowsPerPage={rowsPerPage}
+//           page={page}
+//           onPageChange={handleChangePage}
+//           onRowsPerPageChange={handleChangeRowsPerPage}
+//         />
+//       </Paper>
+//       <Button onClick={handleSaveData}>Save Data</Button>
+//     </Box>
+//   </>
+//   );
+// }
+
+return (
+  <>
+    <Box sx={{ width: '100%', justifyContent: 'flex-start' }}>
+      <Box sx={{ display: 'flex'}}>
+       
+          <SemesterSelect
+            value={semData.SemNo}
+            onChange={handleSemesterChange}
+            intrY={semData.InternalYear}
+            onChangeintrY={onChangeintrY}
+            extrY={semData.ExternalYear}
+            onChangeextrY={onChangeextrY}
+            alignContent="flex-start"
+          />
+       
+      </Box>
+    </Box>
+
+    <Box sx={{ width: '100%', justifyContent: 'flex-start' }}>
+      <Paper>
+        <Box sx={{ width: '100%' }}>
+          <TableContainer>
+            <Table sx={{ minWidth: 750, width: '80vw'}}  aria-labelledby="tableTitle">      
             <EnhancedTableHead
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
+              
             />
             <TableBody>
               {visibleRows.map((student) => (
@@ -285,7 +407,7 @@ setStudents(updatedStudents);
                   sx={{ cursor: 'pointer' }}
                 >
                   <TableCell align="left">{student.Name}</TableCell>
-                  <TableCell align="left">{student.Roll_No}</TableCell>
+                  <TableCell align="left" sx={{ position: "relative", left: "1vw"}}>{student.Roll_No}</TableCell>
                   {/* <TableCell align="left">{student.gender}</TableCell> */}
              
                     <>
@@ -336,9 +458,9 @@ setStudents(updatedStudents);
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
+            </Table>
+          </TableContainer>
+          <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
           count={students.length}
@@ -347,8 +469,10 @@ setStudents(updatedStudents);
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
+        </Box>
       </Paper>
       <Button onClick={handleSaveData}>Save Data</Button>
     </Box>
-  );
-}
+  </>
+);
+                    }

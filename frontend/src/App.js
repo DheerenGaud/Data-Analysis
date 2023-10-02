@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Switch } from 'react-router-dom';
 import Home from './pages/dashboard';
 import Editbatch from './pages/editbatch';
+import Downloaddata from './pages/downloaddata';
 import Addbatch from './pages/addbatch';
 import Findyear from './pages/findyear';
 import Uploaddata from './pages/uploaddata';
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/" exact element={<Home />}></Route>
           <Route path="/addbatch" exact element={<Addbatch />}></Route>
           <Route path="/editbatch" exact element={<Editbatch />}></Route>
+          <Route path="/downloaddata" exact element={<Downloaddata />}></Route>
           <Route path="/studenttable" exact element={<StudentTable />}></Route>
           <Route path="/addsem" exact element={<Addsem />}></Route>
           <Route path="/uploaddata" exact element={<Uploaddata />}></Route>

@@ -11,7 +11,7 @@ import StudentTable from './studenttable';
 import {studentByAcdmicYear} from "../api/api"
 
 
-export default function SelectBatch() {
+export default function Downloaddata() {
       
   const [open, setOpen] = React.useState(false);
 
@@ -88,25 +88,25 @@ export default function SelectBatch() {
 
   return (
     
-    <Grid container justifyContent="center" spacing={2} sx={{ overflow:"hidden" }}>
+    <Grid container justifyContent="center" spacing={2}>
   
       {submitted ? ( 
-        <Box sx={{ display: 'flex'}}>
+        <Box sx={{ display: 'flex' }}>
 
           <Appbar pageName='Edit batch' open={open} handleDrawerOpen={handleDrawerOpen} />
           <Navbar open={open} handleDrawerClose={handleDrawerClose} />
-          <Box component="main" sx={{ flexGrow: 1, p: 15, width:"80vw"}}>
-          
-        
+          <Box component="main" sx={{ flexGrow: 1, p: 15}}>
+          <Grid container justifyContent="center">
+          <Grid item xs={12}>
           <StudentTable allStudent={students} data={data} onChange={handlesemIndex}></StudentTable>
-   
-      
+          </Grid>
+          </Grid>
           </Box>
 
         </Box>
         ) : (
           <Box sx={{ display: 'flex' }}>
-  <Appbar pageName='Edit batch' open={open} handleDrawerOpen={handleDrawerOpen} />
+  <Appbar pageName='Download Data' open={open} handleDrawerOpen={handleDrawerOpen} />
   <Navbar open={open} handleDrawerClose={handleDrawerClose} />
   <Box component="main" sx={{ flexGrow: 1, p: 15 }}>
     <Typography variant="h5" align="center" gutterBottom>
@@ -123,7 +123,7 @@ export default function SelectBatch() {
           </Grid>
           <Grid item xs={12} sm={12} md={12}>
             <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
-              Submit
+              Download
             </Button>
           </Grid>
         </Grid>
