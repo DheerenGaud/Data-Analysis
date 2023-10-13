@@ -31,7 +31,7 @@ export default function SelectBatch() {
     Departname: '',
     End_Year: null,
     startYear:null,
-    index:-1
+    index:1
   });
 
   const semRef=useRef(data);
@@ -66,6 +66,7 @@ export default function SelectBatch() {
     console.log(semRef.current);
     try {
       const x= await studentByAcdmicYear(semRef.current)
+      console.log(x.data);
       if(x.data.status=="ok"){
         console.log(x.data);
         setStudent(x.data.data)
@@ -76,13 +77,17 @@ export default function SelectBatch() {
   };
 
   const handleBatchSubmit = async() => {
-    // const x= await studentByAcdmicYear(data)
-    // if(x.data.status=="ok"){
-    //   console.log(x.data);
-    //   setSubmitted(true);
-    //   setStudent(x.data.data)
-    // }
-    setSubmitted(true);
+    const x= await studentByAcdmicYear(data)
+     console.log(data);
+    if(x.data.status=="ok"){
+      console.log(x.data);
+      setSubmitted(true);
+      setStudent(x.data.data)
+    }
+    else{
+      // setSubmitted(true);
+      alert(x.data.data)
+    }
   };
 
 

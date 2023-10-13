@@ -14,10 +14,6 @@ const UserSecham = mongoose.Schema({
     type: String,
     required: true,
   },
-  Dob: {
-    type: Date,
-    required: true,
-  },
   email: {
     type: String,
     required: true,

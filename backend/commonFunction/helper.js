@@ -30,7 +30,6 @@ exports.AddStudent = async (jsonData, Ac_key) => {
       }
     }
     if (errors.length > 0) {
-       
        throw new Error(errors.join('\n')); // Throw an error instead of sending a response
     }
   } catch (error) {
@@ -58,39 +57,91 @@ exports.DeleteStudent = async (students) => {
   }
 };
 
-exports.GetAllStudentData = async (Ac_key,index) => {
+// exports.GetAllStudentData = async (Ac_key,index) => {
 
+//   try {
+//     const students = await StudentData.find({ Ac_key: Ac_key });
+//     const promises = students.map(async (item) => {
+//       try {
+//         const result = await Semester.findOne({ st_key: item.Roll_No });
+//         console.log(result);
+//         return {
+//           Name: item.Name,
+//           Roll_No: item.Roll_No,
+//           Sgpi:result.Sem[index].Sgpi,
+//           Status: result.Sem[index].Status,
+//           InternalYear: result.Sem[index].InternalYear,
+//           ExternalYear: result.Sem[index].ExternalYear,
+//           InternalKt: result.Sem[index].InternalKt,
+//           ExternalKt: result.Sem[index].ExternalKt,
+        
+//         };
+//       } catch (error) {
+//         console.error('Error occurred while finding semester:', error);
+//         return null; // Return null or a default value for failed fetches
+//       }
+//     });
+  
+//     const simplifiedArray = await Promise.all(promises);
+//     console.log(simplifiedArray);
+//     return simplifiedArray;
+//   } catch (error) {
+//     console.error('Error occurred while finding students:', error);
+//     throw new Error('Error occurred while adding students');
+//   }
+  
+// };
+
+
+exports.GetAllStudentData = async (Ac_key, index) => {
   try {
+    // Find all students with the given Ac_key
     const students = await StudentData.find({ Ac_key: Ac_key });
+
     const promises = students.map(async (item) => {
       try {
+        // Find the semester data for the student
         const result = await Semester.findOne({ st_key: item.Roll_No });
-        return {
-          Name: item.Name,
-          Roll_No: item.Roll_No,
-          Sgpi: result.Sem[index].Sgpi,
-          Status: result.Sem[index].Status,
-          InternalYear: result.Sem[index].InternalYear,
-          ExternalYear: result.Sem[index].ExternalYear,
-          InternalKt: result.Sem[index].InternalKt,
-          ExternalKt: result.Sem[index].ExternalKt,
+
         
-        };
+        if (result) {
+          // Check if the semester data and the index exist before accessing them
+          if (result.Sem && result.Sem[index]) {
+            return {
+              Name: item.Name,
+              Roll_No: item.Roll_No,
+              Sgpi: result.Sem[index].Sgpi,
+              Status: result.Sem[index].Status,
+              InternalYear: result.Sem[index].InternalYear,
+              ExternalYear: result.Sem[index].ExternalYear,
+              InternalKt: result.Sem[index].InternalKt,
+              ExternalKt: result.Sem[index].ExternalKt,
+            };
+          } else {
+            console.error('Semester data or index not found for', item.Roll_No);
+            return null;
+          }
+        } else {
+          console.error('Semester data not found for', item.Roll_No);
+          return null;
+        }
       } catch (error) {
         console.error('Error occurred while finding semester:', error);
         return null; // Return null or a default value for failed fetches
       }
     });
-  
+
     const simplifiedArray = await Promise.all(promises);
-    // console.log(simplifiedArray);
+    console.log(simplifiedArray);
     return simplifiedArray;
   } catch (error) {
     console.error('Error occurred while finding students:', error);
     throw new Error('Error occurred while adding students');
   }
-  
 };
+
+
+
 
 exports.CheckUnqueStudent = async (jsonData) => {
   try {

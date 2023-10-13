@@ -169,7 +169,7 @@ Router.delete("/deleteStudent",async(req,res)=>{
 
 Router.post("/semesterData",async(req,res)=>{
   const {Departname,End_Year,students,SemNo, InternalYear,ExternalYear}=req.body;
- 
+   console.log(req.body);
   const NotFound = await FindAll(students);
 
   try {
@@ -199,6 +199,123 @@ Router.post("/semesterData",async(req,res)=>{
     return res.status(500).json({ status: 'error', data: 'Internal server error.' });
   }
 })
+
+// Router.post("/generate-excel", async(req, res) => {
+//   const {Departname,End_Year}=req.body;
+//   console.log(req.body)
+//   try {
+//     const existingAcademicYear = await AcademicYear.findOne({
+//       Departname: Departname,
+//       End_Year: End_Year,
+//     });
+
+//     const AllStudent = await StudentData.find({ Ac_key: existingAcademicYear._id });
+
+//     const worksheetData = AllStudent.map((Student, index) => ({
+//       S_no: index + 1,
+//       Roll_No: Student.Roll_No,
+//       Name: Student.Name,
+//       Gender: Student.Gender,
+//     }));
+//     const months = [
+//       "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+//       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+//     ];
+
+//     const workbook = new ExcelJS.Workbook();
+//     const worksheet = workbook.addWorksheet("Student Details");
+//       // Merge cells for the first two custom header rows
+//   worksheet.mergeCells("A1:Q1");
+//   worksheet.mergeCells("A2:Q2");
+
+//   // Set values for the custom header rows
+//   worksheet.getCell("A1").value = "FR.C.RODRIGUES INSTITUTE OF TECHNOLOGY, VASHI.";
+//   worksheet.getCell("A2").value = "COURSE : INFORMATION TECHNOLOGY (2020-2021)";
+
+//   // Add an empty row for spacing
+//   worksheet.addRow([]);
+
+
+//     const headers = [
+//       "ROLL NO",
+//       "NAME",
+//       "SEM1 IA/O/P",
+//       "SEM1 THEORY",
+//       "SEM2 IA/O/P",
+//       "SEM2 THEORY",
+//       "SEM3 IA/O/P",
+//       "SEM3 THEORY",
+//       "SEM4 IA/O/P",
+//       "SEM4 THEORY",
+//       "SEM5 IA/O/P",
+//       "SEM5 THEORY",
+//       "SEM6 IA/O/P",
+//       "SEM6 THEORY",
+//       "SEM7 IA/O/P",
+//       "SEM7 THEORY",
+//       "SEM8 IA/O/P",
+//       "SEM8 THEORY",
+//     ];
+
+//     worksheet.addRow(headers);
+    
+//     // console.log(students)
+//     // Add data rows for each student
+//     for (const student of worksheetData) {
+//                 const stude = await Semester.findOne({
+//                  st_key: student.Roll_No,
+//        });
+    
+//       const rowData = [
+//         student.Roll_No,
+//         student.Name
+//       ];
+    
+      // stude.Sem.forEach(semester => {
+      //   if (semester.Status === true) {
+      //     rowData.push(semester.InternalYear); // Add internal year
+      //     rowData.push(semester.ExternalYear); // Add external year
+      //   } else {
+      //     if(semester.InternalYear!==" "){
+      //       rowData.push(semester.InternalYear);
+      //     }
+      //     else{
+      //       rowData.push("Kt "+stude.Kt_count);
+      //     }
+      //     if(semester.ExternalYear!==" "){
+      //       rowData.push(semester.ExternalYear);
+      //     }
+      //     else{
+      //       rowData.push("Kt "+stude.Kt_count); // If status is not pass, leave cells empty
+      //     }
+      //   }
+      // });
+
+
+//       rowData.push(""); // Leave RESULT cell empty for now
+    
+//       worksheet.addRow(rowData);
+//     }
+
+//     // Save the workbook to a buffer
+//     const excelFilename = 'student_marks.xlsx';
+//     await workbook.xlsx.writeFile(excelFilename);
+  
+//     // Set response headers
+//     res.setHeader('Content-Disposition', `attachment; filename=${excelFilename}`);
+//     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  
+//     // Stream the saved file to the response
+//     const fileStream = fs.createReadStream(excelFilename);
+//     fileStream.pipe(res);
+  
+//     // Delete the local file after streaming it
+//     fs.unlinkSync(excelFilename);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
 
 Router.post("/generate-excel", async(req, res) => {
   const {Departname,End_Year}=req.body;
@@ -300,24 +417,159 @@ Router.post("/generate-excel", async(req, res) => {
     }
 
     // Save the workbook to a buffer
-    const excelFilename = 'student_marks.xlsx';
-    await workbook.xlsx.writeFile(excelFilename);
-  
+    const excelBuffer = await workbook.xlsx.writeBuffer();
+
     // Set response headers
-    res.setHeader('Content-Disposition', `attachment; filename=${excelFilename}`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  
-    // Stream the saved file to the response
-    const fileStream = fs.createReadStream(excelFilename);
-    fileStream.pipe(res);
-  
-    // Delete the local file after streaming it
-    fs.unlinkSync(excelFilename);
+    res.setHeader("Content-Disposition", "attachment; filename=student_marks.xlsx");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+    // Send the Excel buffer as the response
+    res.send(excelBuffer);
+
+
+    // res.download("","student_marks.xlsx")
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
+
+
+// Router.post("/generate-excel", async (req, res) => {
+//   try {
+//     const {Departname,End_Year}=req.body;
+//     // Your data retrieval and preparation code
+//     const existingAcademicYear = await AcademicYear.findOne({
+//       Departname: Departname,
+//       End_Year: End_Year,
+//     });
+
+//     const AllStudent = await StudentData.find({ Ac_key: existingAcademicYear._id });
+
+//     const workbook = new ExcelJS.Workbook();
+//     const worksheet = workbook.addWorksheet("Student Details");
+
+//     // Create a style object for the header row
+//     const headerStyle = {
+//       font: { bold: true }, // Bold font
+//       alignment: { horizontal: 'center' }, // Centered text
+//       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF00' } }, // Yellow background color
+//     };
+
+//     // Set values for the custom header rows
+//     worksheet.getCell('A1').value = 'FR.C.RODRIGUES INSTITUTE OF TECHNOLOGY, VASHI.';
+//     worksheet.getCell('A2').value = 'COURSE: INFORMATION TECHNOLOGY (2020-2021)';
+
+//     // Apply the header style to the header row
+//     worksheet.getCell('A1').style = headerStyle;
+//     worksheet.getCell('A2').style = headerStyle;
+
+//     worksheet.getColumn('B').width = 20; // Increase the width of column B (Name)
+//     worksheet.getColumn('C').width = 15; // Increase the width of column C (Year)
+
+
+//     // Add an empty row for spacing
+//     worksheet.addRow([]);
+
+//     const headers = [
+//       "ROLL NO",
+//       "NAME",
+//       "SEM1 IA/O/P",
+//       "SEM1 THEORY",
+//       "SEM2 IA/O/P",
+//       "SEM2 THEORY",
+//       "SEM3 IA/O/P",
+//       "SEM3 THEORY",
+//       "SEM4 IA/O/P",
+//       "SEM4 THEORY",
+//       "SEM5 IA/O/P",
+//       "SEM5 THEORY",
+//       "SEM6 IA/O/P",
+//       "SEM6 THEORY",
+//       "SEM7 IA/O/P",
+//       "SEM7 THEORY",
+//       "SEM8 IA/O/P",
+//       "SEM8 THEORY",
+//       "RESULT"
+//     ];
+
+//     // Apply the header style to the header cells
+//     headers.forEach((header, index) => {
+//       const cell = worksheet.getCell(getExcelColumn(index + 1) + '4');
+//       cell.value = header;
+//       cell.style = headerStyle;
+//     });
+
+//     // Add data rows for each student
+//     for (const student of AllStudent) {
+
+//       const stude = await Semester.findOne({
+//         st_key: student.Roll_No,
+//       });
+
+//       const rowData = [
+//         student.Roll_No,
+//         student.Name,
+//         // Add your data here
+//       ];
+//       stude.Sem.forEach(semester => {
+//         if (semester.Status === true) {
+//           rowData.push(semester.InternalYear); // Add internal year
+//           rowData.push(semester.ExternalYear); // Add external year
+//         } else {
+//           if(semester.InternalYear!==" "){
+//             rowData.push(semester.InternalYear);
+//           }
+//           else{
+//             rowData.push("Kt "+stude.Kt_count);
+//           }
+//           if(semester.ExternalYear!==" "){
+//             rowData.push(semester.ExternalYear);
+//           }
+//           else{
+//             rowData.push("Kt "+stude.Kt_count); // If status is not pass, leave cells empty
+//           }
+//         }
+//       });
+//       // Add Kt_count and RESULT values
+//       rowData.push(student.Kt_count);
+//       rowData.push(""); // Leave RESULT cell empty for now
+
+//       worksheet.addRow(rowData);
+//     }
+
+//     // Save the workbook to a buffer
+//     const excelBuffer = await workbook.xlsx.writeBuffer();
+
+//     // Set response headers
+//     res.setHeader("Content-Disposition", "attachment; filename=student_marks.xlsx");
+//     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+//     // Send the Excel buffer as the response
+//     res.send(excelBuffer);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
+
+// Helper function to get Excel column name from index
+// function getExcelColumn(index) {
+//   let columnName = '';
+//   while (index > 0) {
+//     const remainder = (index - 1) % 26;
+//     columnName = String.fromCharCode(65 + remainder) + columnName;
+//     index = Math.floor((index - 1) / 26);
+//   }
+//   return columnName;
+// }
+
+
+
+
+
+
+
 
 Router.post("/studentByAcdmicYear",async(req,res)=>{
  

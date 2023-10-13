@@ -6,7 +6,8 @@ const PasswordReset=require("../model/passwordReset")
 const jwt = require("jsonwebtoken")
 const {v4:uuidv4}=require("uuid")
 const bycrpt=require("bcryptjs")
-const nodemailer =require("nodemailer")
+const nodemailer =require("nodemailer");
+const userVarification = require("../model/userVarification");
 
 
 require("dotenv").config();
@@ -37,7 +38,7 @@ const sendemailvarification=({_id,email},res)=>{
        to:email,
        subject:"Verify Your email",
        html:`<p>Verufy your email Address to complete the singup and login into Your account .<p>TRhis is the link <br>expire in 6 hourese</br></p></p>
-        <p> press <a href=${currentUrl+"user/verify/"+_id+"/"+uniqueSting}> here</a> to proceed</p>`
+        <p> press <a href=${currentUrl+"auth/verify/"+_id+"/"+uniqueSting}> here</a> to proceed</p>`
     }
    
     //hash the uniguestring
@@ -77,6 +78,7 @@ const sendemailvarification=({_id,email},res)=>{
    
 Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
     let {userID,uinqueString}=req.params;
+  
     UserVarification.find({userID})
     .then((result)=>{
        if(result.length>0){
@@ -115,13 +117,14 @@ Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
           .compare(uinqueString,hashUniqueString)
           .then((result)=>{
            if(result){
+           
                // Sting match 
                User
                .updateOne({_id:userID},{varified:true})
                .then(()=>{
                    //user varifiyed so now delete the userVarifiction detail
                    UserVarification
-                   .deleteOne({userID})
+                   .deleteOne({userID:userID})
                    .then(()=>{
                        let massege="succesfully varifired Go for Login." 
                        res.json({status:"ok",data:massege})
@@ -152,7 +155,7 @@ Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
          }
        }
        else{
-       let massege="An account record does not exist or has been varified  alredy . plese singIn or login" 
+       let massege="succesfully varifired Go for Login" 
        res.json({status:"error",data:massege})
        }
     })
@@ -160,19 +163,24 @@ Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
        console.log(err)
        let massege="An error occured while cheking for existing user varification " 
        res.json({status:"error",data:massege})
-    })
+    }) 
 })
+
+
+
+
+
 
 
 Router.post("/singUp",async(req,res)=>{
     console.log(req.body);
-    const {Fname,Lname,password,Dob,email}=req.body;
+    const {Fname,Lname,password,email}=req.body;
     try {    
      const encryptPassword= await bycrpt.hash(password,10)
     await User.findOne({email}).then((result)=>{
         if(!result){
                  User.create({
-                    Fname,Lname,email,password:encryptPassword,varified:false,Dob
+                    Fname,Lname,email,password:encryptPassword,varified:false
                 })
                 .then((x)=>{
                     sendemailvarification(x,res);
@@ -202,10 +210,10 @@ Router.post("/login-user", async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if (!user) {
-          return res.json({ error: "user not found", redirect: "" });
+          return res.json({status: "error", data: "user not found", redirect: "" });
         } else {
           if (!user.varified) {
-            return res.json({ error: "User is not varified" });
+            return res.json({status: "error", data: "User is not varified" });
           }
           if (await bycrpt.compare(password, user.password)){
             const token = jwt.sign({ email: user.email }, process.env.JWT_SECREAT, {
@@ -214,10 +222,10 @@ Router.post("/login-user", async (req, res) => {
             if (res.status(201)) {
               return res.json({ status: "ok",data:  token });
             } else {
-              return res.json({ error: "Error" });
+              return res.json({ status: "error",data:"internal error" });
             }
           }
-          return res.json({ status: "error", error: "INVALID PASSWORD" });
+          return res.json({ status: "error", data: "INVALID PASSWORD" });
         }
     } catch (error) {
         return res.json({status:"error",data:"internal error"})
