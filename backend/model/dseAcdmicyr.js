@@ -12,11 +12,6 @@ const dceAcademicYearSchema=mongoose.Schema({
       End_Year: {
         type: String,
         required: true,
-      },
-      No_of_student: {
-        type: Number,
-        required: true,
-      },
+      }
 })
-
 module.exports=mongoose.model("dceAcademicYear",dceAcademicYearSchema)

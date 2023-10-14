@@ -20,13 +20,12 @@ const studentSchema = mongoose.Schema({
     default:0,
     required: true,
   },
-  Ac_key: {
+  Ac_key:{
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     refPath: "Ac_model",
   },
   
- 
 });
 // Ac_model: {
 //   type: String,

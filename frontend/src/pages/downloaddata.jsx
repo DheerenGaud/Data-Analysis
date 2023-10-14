@@ -62,6 +62,9 @@ export default function Downloaddata() {
     try {
       const response = await DownlodExcel(data);
       
+      // if(response.data.status==="ok"){
+
+      // }
       // Create a Blob from the response data
       const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       
@@ -79,6 +82,7 @@ export default function Downloaddata() {
       // Release the temporary URL
       window.URL.revokeObjectURL(url);
     } catch (error) {
+      
       console.error('Error downloading Excel file:', error);
     }
   };

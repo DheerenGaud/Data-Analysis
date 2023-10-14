@@ -16,6 +16,10 @@ const semesterSchema = mongoose.Schema({
       required: true,
       default: false,
     },
+    attempt: {
+      type: Boolean,
+      default: true,
+    },
     InternalYear:{
       type: String,
       required: true,
@@ -39,7 +43,7 @@ const semesterSchema = mongoose.Schema({
     type: Number,
     required: true,
     default: -1,
-  },
+  }
 });
 
 module.exports = mongoose.model("Semester", semesterSchema);
