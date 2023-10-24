@@ -1,9 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, {  useEffect, useRef, useState } from 'react';
 import { Box, Grid, Button, Typography, Paper } from '@mui/material';
 import DepartmentSelect from '../components/Selectdepartment';
 import MonthYearSelect from '../components/Selectmonthyear';
-import Navigationbar from '../components/Navbar';
 import Appbar from '../components/Appbar';
 import Navbar from '../components/Navbar';
 import dayjs from 'dayjs';
@@ -17,16 +15,11 @@ export default function SelectBatch() {
 
   const [submitted, setSubmitted] = useState(false);
   const [students,setStudent]=useState([]);
+
+  const semFinaluseRef=useRef(null)
   
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
-
-
+  
+  
   const [data, setData] = useState({
     Departname: '',
     End_Year: null,
@@ -36,6 +29,18 @@ export default function SelectBatch() {
 
   const semRef=useRef(data);
 
+
+ 
+
+    const handleDrawerOpen = () => {
+      setOpen(true);
+    };
+  
+    const handleDrawerClose = () => {
+      setOpen(false);
+    };
+
+      
   const handleDepartmentChange = (event) => {
     const newDepartment = event.target.value;
     setData((prevData) => ({
@@ -46,7 +51,6 @@ export default function SelectBatch() {
 
   const handleDateChange = (date) => {
     const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
-    console.log(formattedDate);
     setData((prevData) => ({
       ...prevData,
       Start_Year: formattedDate, // Update Start_YearMonth with the formatted date
@@ -63,32 +67,33 @@ export default function SelectBatch() {
     semRef.current=data
     semRef.current.index=index;
     setData({...semRef.current});
-    console.log(semRef.current);
     try {
       const x= await studentByAcdmicYear(semRef.current)
-      console.log(x.data);
+      // console.log(x.data);
       if(x.data.status=="ok"){
-        console.log(x.data);
-        setStudent(x.data.data)
+        setStudent(x.data.data.data)
+        semFinaluseRef.current=x.data.data.final_Revaluation
       }
     } catch (error) {
       
     }
   };
+  
 
   const handleBatchSubmit = async() => {
     const x= await studentByAcdmicYear(data)
-     console.log(data);
+    //  console.log(data);
     if(x.data.status=="ok"){
-      console.log(x.data);
       setSubmitted(true);
-      setStudent(x.data.data)
+      semFinaluseRef.current=x.data.data.final_Revaluation
+      setStudent(x.data.data.data)   
     }
     else{
-      // setSubmitted(true);
       alert(x.data.data)
     }
   };
+
+
 
 
   return (
@@ -103,7 +108,7 @@ export default function SelectBatch() {
           <Box component="main" sx={{ flexGrow: 1, p: 15, width:"80vw"}}>
           
         
-          <StudentTable allStudent={students} data={data} onChange={handlesemIndex}></StudentTable>
+          <StudentTable Final_Revaluation={semFinaluseRef.current} refresh={handleBatchSubmit}   allStudent={students} data={data} onChange={handlesemIndex}></StudentTable>
    
       
           </Box>

@@ -4,10 +4,12 @@ import DepartmentSelect from '../components/Selectdepartment';
 import MonthYearSelect from '../components/Selectmonthyear';
 import Appbar from '../components/Appbar';
 import Navbar from '../components/Navbar';
+import { TextField, MenuItem } from '@mui/material';
+
 import dayjs from 'dayjs';
 
 
-import {DownlodExcel} from "../api/api"
+import {DownlodExcel,downloadGetData} from "../api/api"
 
 
 export default function Downloaddata() {
@@ -27,9 +29,8 @@ export default function Downloaddata() {
   const [data, setData] = useState({
     Departname: '',
     End_Year: null,
+    document:"",
   });
-
-
 
   const handleDepartmentChange = (event) => {
     const newDepartment = event.target.value;
@@ -41,7 +42,6 @@ export default function Downloaddata() {
 
   const handleDateChange = (date) => {
     const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
-    console.log(formattedDate);
     setData((prevData) => ({
       ...prevData,
       End_Year: dayjs(date).add(4, 'year').format('MMMM YYYY'), // Calculate and format End_YearMonth
@@ -55,35 +55,55 @@ export default function Downloaddata() {
   };
  
 
-  // const handleBatchSubmit = async() => {
-  //   const x= await DownlodExcel(data);
-  // };
-  const handleBatchSubmit = async () => {
-    try {
-      const response = await DownlodExcel(data);
-      
-      // if(response.data.status==="ok"){
+  const handleChangeDownload = async(e) => {
+    setData((prevData) => ({
+      ...prevData,
+      document: e.target.value,
+    }));
+  };
 
-      // }
-      // Create a Blob from the response data
-      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      
-      // Create a temporary URL for the Blob
+
+  const handleBatchSubmit = async () => {
+    if(data.document!==""&&data.End_Year!==null&&data.Departname!==""){
+      try {
+        if(data.document==="generate-excel"){
+          const response = await DownlodExcel(data);
+          const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'student_marks.xlsx';
+          a.click();
+          window.URL.revokeObjectURL(url);
+        }
+        else{
+          console.log(data);
+            const response=await downloadGetData(data);
+        if (response.status === 200) {
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+  
       const url = window.URL.createObjectURL(blob);
-      
-      // Create a temporary <a> element to trigger the download
+  
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'student_marks.xlsx';
-      
-      // Trigger a click on the <a> element to start the download
+      a.download = 'academic-report.pdf'; // Set the desired filename
+      a.style.display = 'none';
+  
+      document.body.appendChild(a);
       a.click();
-      
-      // Release the temporary URL
+  
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      
-      console.error('Error downloading Excel file:', error);
+       } else {
+         console.error('Request failed with status:', response.status);
+       }
+        }
+      } catch (error) {
+        console.error('Error downloading Excel file:', error);
+      }
+    }
+    else{
+      alert("fill the field !!!!!!!!")
     }
   };
 
@@ -110,6 +130,20 @@ export default function Downloaddata() {
             <MonthYearSelect value={data.startYear} onChange={handleDateChange} onKeyDown={handleKeyDown} />
           </Grid>
           <Grid item xs={12} sm={12} md={12}>
+          <TextField
+      select
+      required={true}
+      label="Select Document"
+      value={data.document}
+      onChange={handleChangeDownload}
+      fullWidth
+      margin="normal"
+    >
+      <MenuItem value="generate-excel">Eligibility</MenuItem>
+      <MenuItem value="generate-pdf-withoutKt">WithOutKt</MenuItem>
+      <MenuItem value="generate-pdf-withKt">WithKt</MenuItem>
+     
+    </TextField>
             <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
               Download
             </Button>

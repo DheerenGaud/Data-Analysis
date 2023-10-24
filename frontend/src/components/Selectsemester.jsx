@@ -1,12 +1,13 @@
 import { TextField, MenuItem } from '@mui/material';
 import MonthYearSelect from '../components/Selectmonthyear';
 import React, { useState } from 'react';
+import Radio from '@mui/material/Radio';
+
 
 import Grid from '@mui/material/Grid';
-import { roRO } from '@mui/x-date-pickers';
 
 
-const SemesterSelect = ({ value, onChange ,onChangeintrY,intrY,extrY,onChangeextrY, alignContent}) => {
+const SemesterSelect = ({ value, onChange ,onChangeintrY,intrY,extrY,onChangeextrY, onchangeFinalREval,Final_Revaluation,update_Kt,Update_Kt_student}) => {
     return (
         <Grid container spacing={1} alignItems="center" direction={'row'}>
             <Grid item xs={4} md={4}>
@@ -35,6 +36,20 @@ const SemesterSelect = ({ value, onChange ,onChangeintrY,intrY,extrY,onChangeext
             <Grid item xs={4} md={4} className='pageStyle'>
                 <MonthYearSelect name="ExternalYear"  value={extrY} onChange={onChangeextrY} />
             </Grid>
+            <Grid item xs={4} md={4} className='pageStyle'>
+                {
+                    Final_Revaluation===true? <Radio disabled={true} checked={Final_Revaluation} />:
+                    <Radio checked={Final_Revaluation}  onChange={onchangeFinalREval} />
+                }
+                <label htmlFor="">(Final Reevaluation)</label>
+            </Grid>
+            <Grid item xs={4} md={4}  className='pageStyle'>
+                <Radio checked={update_Kt}  onClick={Update_Kt_student}/>
+                <label htmlFor="">(Update Kt-Student)</label>
+
+            </Grid>
+               
+              
         </Grid>
   );
 };

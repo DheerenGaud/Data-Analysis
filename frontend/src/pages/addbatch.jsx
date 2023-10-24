@@ -8,8 +8,9 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Grid from '@mui/material/Grid';
 import Navbar from '../components/Navbar';
 import Appbar from '../components/Appbar';
-
-import {newAcdmicyear} from "../api/api"
+import { TextField, MenuItem } from '@mui/material';
+import {    Paper } from '@mui/material';
+import {newAcdmicyear,newDseAcdmicyear} from "../api/api"
 
 
 const VisuallyHiddenInput = styled('input')`
@@ -41,18 +42,33 @@ export default function Addbatch() {
     End_Year: "",
     Departname: '',
     file: null,
-    No_of_student:5
+    No_of_student:5,
+    typeOfStudent:""
   });
 
 
   const handleDateChange = (date) => {
-    const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
-    console.log(formattedDate);
-    setData((prevData) => ({
-      ...prevData,
-      Start_Year: formattedDate, // Update Start_YearMonth with the formatted date
-      End_Year: dayjs(date).add(4, 'year').format('MMMM YYYY'), // Calculate and format End_YearMonth
-    }));
+    if(!data.typeOfStudent){
+            alert("First select the type of student")
+    }
+    else{
+      if(data.typeOfStudent!=="dse"){
+        const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
+        setData((prevData) => ({
+          ...prevData,
+          Start_Year: formattedDate, // Update Start_YearMonth with the formatted date
+          End_Year: dayjs(date).add(4, 'year').format('MMMM YYYY'), // Calculate and format End_YearMonth
+        }));
+      }
+      else{
+        const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
+        setData((prevData) => ({
+          ...prevData,
+          Start_Year: formattedDate, // Update Start_YearMonth with the formatted date
+          End_Year: dayjs(date).add(3, 'year').format('MMMM YYYY'), // Calculate and format End_YearMonth
+        }));
+      }
+    }
   };
 
 
@@ -61,6 +77,12 @@ export default function Addbatch() {
     setData((prevData) => ({
       ...prevData,
       file: file
+    }));
+  };
+  const handleChangeTypeStudent = (e) => {  
+    setData((prevData) => ({
+      ...prevData,
+      typeOfStudent: e.target.value
     }));
   };
 
@@ -81,38 +103,50 @@ export default function Addbatch() {
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
 
   const handleBatchSubmit = () => {
-    console.log(data);
     if (!data.Departname) {
-      console.log("Please enter the department.");
+      alert("Please enter the department.")
     } else if (!data.Start_Year) {
-      console.log("Please enter the month and year");
-    } else {
+      alert("Please enter the month and year")
+    } 
+    else if(!data.typeOfStudent){
+      alert("Please enter the type of student")
+    }else {
       setOpenUploadDialog(true);
     }
   };
 
   const handleUpload = async () => {
-   console.log(data);
    if(data.file!==null){
+     const formData = new FormData();
+     formData.append('file', data.file);
+     formData.append('Departname', data.Departname);
+     formData.append('Start_Year', data.Start_Year);
+     formData.append('End_Year', data.End_Year);
+     formData.append('No_of_student', data.No_of_student);
     try {
-      const formData = new FormData();
-      formData.append('file', data.file);
-      formData.append('Departname', data.Departname);
-      formData.append('Start_Year', data.Start_Year);
-      formData.append('End_Year', data.End_Year);
-      formData.append('No_of_student', data.No_of_student);
-
-      const x=await newAcdmicyear(formData);
-      if(x.data.status==="error"){
-        alert(x.data.data);
+      if(data.typeOfStudent!=="dse"){
+            
+        const x=await newAcdmicyear(formData);
+        if(x.data.status==="error"){
+          alert(x.data.data);
+        }
+        else{
+          alert(x.data.data);
+        }
       }
       else{
-        alert(x.data.data);
+        const x=await newDseAcdmicyear(formData);
+        if(x.data.status==="error"){
+          alert(x.data.data);
+        }
+        else{
+          alert(x.data.data);
+        }
       }
+
     
     } catch (error) {
       console.error('Error uploading file:', error);
-      // Handle any errors that occur during the upload
     }
    }
    else{
@@ -121,30 +155,49 @@ export default function Addbatch() {
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
-    <Appbar pageName='Add batch' open={open} handleDrawerOpen={handleDrawerOpen} />
-    <Navbar open={open} handleDrawerClose={handleDrawerClose} />
-    <Box component="main" sx={{ flexGrow: 1, p: 10}}>
-        
-      <Typography variant="h5" align="center" gutterBottom>
-        Add New Batch
-      </Typography>
-      <Grid container spacing={1} justifyContent="center">
-        <Grid item xs={5}>
-          <DepartmentSelect value={data.Departname} onChange={handleDepartmentChange} />
-        </Grid>
-        <Grid container spacing={2} justifyContent="center"></Grid>
-        <Grid item xs={5}>
-          <MonthYearSelect value={data.Start_Year} onChange={handleDateChange} onKeyDown={handleKeyDown} />
-        </Grid>
-        <Grid container spacing={2} justifyContent="center"></Grid>
-        <Grid item xs={5}>
-          <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
+    <>
+  
+<Grid container justifyContent="center" spacing={2}>
+  
+  
+<Box sx={{ display: 'flex' }}>
+<Appbar pageName='Download Data' open={open} handleDrawerOpen={handleDrawerOpen} />
+<Navbar open={open} handleDrawerClose={handleDrawerClose} />
+<Box component="main" sx={{ flexGrow: 1, p: 15 }}>
+<Typography variant="h5" align="center" gutterBottom>
+Select Batch
+</Typography>
+<Box width="50vw" sx={{ display: 'flex' }}>
+<Paper elevation={3} sx={{ flexGrow: 1, p: 6 }}>
+<Grid container spacing={1} alignItems="center">
+<Grid item xs={12} sm={12} md={12}>
+<TextField
+select
+required={true}
+label="Select Type of student"
+value={data.typeOfStudent}
+onChange={handleChangeTypeStudent}
+fullWidth
+margin="normal"
+>
+<MenuItem value="normal">noraml</MenuItem>
+<MenuItem value="dse">dse</MenuItem>
+</TextField>
+
+</Grid>
+<Grid item xs={12} md={6}>
+<DepartmentSelect value={data.Departname} onChange={handleDepartmentChange} />
+</Grid>
+<Grid item xs={12} md={6} className='pageStyle'>
+<MonthYearSelect value={data.Start_Year} onChange={handleDateChange} onKeyDown={handleKeyDown} />
+</Grid>
+
+<Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
             Submit
           </Button>
-        </Grid>
-      </Grid>
-      <Dialog open={openUploadDialog} onClose={() => setOpenUploadDialog(false)}>
+</Grid>
+</Paper>
+<Dialog open={openUploadDialog} onClose={() => setOpenUploadDialog(false)}>
         <DialogTitle>Upload Batch Data</DialogTitle>
         <DialogContent style={{ display: 'flex', justifyContent: 'center' }}>
           <Button
@@ -166,7 +219,12 @@ export default function Addbatch() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
-    </Box>
+</Box>
+</Box>
+</Box>
+
+
+</Grid>
+</>
   );
 }

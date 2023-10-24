@@ -5,7 +5,7 @@ const Semester = require('../model/semester');
 
 exports.AddStudent = async (jsonData, Ac_key) => {
   const errors = [];
-  console.log(jsonData);
+  // console.log(jsonData);
   try {
     for (const data of jsonData) {
       const { Name, Roll_No } = data;
@@ -182,9 +182,9 @@ exports.FindAll = async (jsonData) => {
   }
 };
 
-exports.UpdateSem = async (students,index,InternalYear,ExternalYear,final_Eval_Back,final_eval_front,_id) => {
+exports.UpdateSem = async (students,semNo,InternalYear,ExternalYear,final_Eval_Back,final_eval_front,_id,current_sem,update_Kt) => {
   const errors = [];
-
+  const index = semNo-1;
   const a=InternalYear;
   const b=ExternalYear;
   
@@ -217,7 +217,7 @@ exports.UpdateSem = async (students,index,InternalYear,ExternalYear,final_Eval_B
 
         if(!Status){
 
-            console.log("attemp");
+            // console.log("attemp");
 
            if(attempt==true){
             studentSem.Sem[index].attempt=false
@@ -251,10 +251,14 @@ exports.UpdateSem = async (students,index,InternalYear,ExternalYear,final_Eval_B
         else{
           // evalution mai pass huaa hai
           if(final_eval_front&&!final_Eval_Back&&!attempt){
+            console.log("hellooooooo");
+            console.log("ktVal "+ktVal);
+            console.log("sum "+sum);
             studentSem.Sem[index].attempt=true;
 
-            if(ktVal-sum==0){
-             studentSem.ktVal=-1;
+            if(ktVal-sum===0){
+              console.log("mathew");
+              studentSem.Kt_count=-1;
             }
             else{
              studentSem.Kt_count =  studentSem.Kt_count-sum;
@@ -262,13 +266,11 @@ exports.UpdateSem = async (students,index,InternalYear,ExternalYear,final_Eval_B
             studentSem.Sem[index].InternalKt=0;
             studentSem.Sem[index].ExternalKt=0; 
           }
-
-
-           if(ktVal!==-1){  
+         else if(ktVal!==-1){  
             if(!bol){
-              studentSem.Kt_count =  studentSem.Kt_count-sum;
+              studentSem.Kt_count =  studentSem.Kt_count-sum; 
               studentSem.Sem[index].InternalKt=inteKt;
-              studentSem.Sem[index].ExternalKt=extrKt;
+              studentSem.Sem[index].ExternalKt=extrKt; 
             }
           }             
             
@@ -288,14 +290,35 @@ exports.UpdateSem = async (students,index,InternalYear,ExternalYear,final_Eval_B
         errors.push('this student is not exsist  ' +st_key);
       }
 
-      if(final_eval_front&&!final_Eval_Back){
-        // report gurate
-        GenerateReportFirstAttempt(_id);
-      }
-      // GenerateReportFirstAttempt(_id);
-
+      
     }
-
+    if (semNo-current_sem<=1&&!final_Eval_Back) {
+      console.log(semNo)
+      GenerateReportFirstAttempt(_id,semNo,true);
+    }
+    else if(update_Kt){
+      // Update the With Kt sudunt data
+      GenerateReportFirstAttempt(_id,semNo,false);
+    }
+    
+    if(final_eval_front&&!final_Eval_Back){
+      try {
+            GenerateReportFirstAttempt(_id);
+            await AcademicYear.updateOne(
+            {
+             _id:_id
+            },
+            {
+              $set: {
+                [`final_Revaluation.${semNo-1}`]: true,
+              },
+            },
+          );
+      
+        } catch (err) {
+          console.error(err);
+        }
+    }
     if (errors.length > 0) {
       throw new Error(errors.join('\n')); 
     }
@@ -305,79 +328,176 @@ exports.UpdateSem = async (students,index,InternalYear,ExternalYear,final_Eval_B
   }
 };
 
-const GenerateReportFirstAttempt=async(_id)=>{
-  const existingAcademicYear = await AcademicYear.findOne({
-    _id
-  });
 
-  const current_sem=existingAcademicYear.current_sem;
-  if(current_sem==1){
-    retrun ;
+
+// const GenerateReportFirstAttempt=async(_id)=>{
+//   const existingAcademicYear = await AcademicYear.findOne({
+//     _id
+//   });
+
+//   const current_sem=existingAcademicYear.current_sem;
+//   if(current_sem==1){
+//     retrun ;
+//   }
+//   const dse_key=existingAcademicYear.dse_key;
+
+//   const student=GetStudentData(_id,current_sem)
+//   const dseStudent=GetStudentData(dse_key,current_sem)
+  
+//   console.log(student);
+  
+//   if (Array.isArray(student) && Array.isArray(dseStudent)) {
+//     // Combine the data from both arrays into a single array
+//   const combinedData = student.map(pass_student => ({ pass_student, pass_student_dse }))
+//     .concat(dseStudent.map(pass_student_dse => ({ pass_student_dse })));
+//   AcademicYear.updateOne(
+//     { _id: _id },
+//     {
+//       $push: {
+//         without_kt: {
+//           $each: combinedData,
+//         },
+//       },
+//     },
+//     (err, result) => {
+//       if (err) {
+//         console.error('Error updating document:', err);
+//       } else {
+//         console.log('Document updated successfully:', result);
+//       }
+//     }
+//   );
+// } else {
+//   console.error('Error: student and dseStudent should be arrays.');
+// }
+// }
+
+
+// const GetStudentData=async(_id,current_sem)=>{
+//   let count=[0,0,0,0];
+//   // const x={temp:0}
+//   const students = await StudentData.find({ Ac_key: _id });
+
+//   if(current_sem%2===0){
+//     current_sem=current_sem/2;
+//   }
+//   else{
+//     current_sem=Math.floor(current_sem/2);
+//   }
+
+//   await Promise.all(students.map(async (item) => {
+//     try {
+//       // Find the semester data for the student
+//       const result = await Semester.findOne({ st_key: item.Roll_No });
+
+//       for(let i=0;i<current_sem*2;i=i+2){
+//           if(result.Sem[i].attempt&&result.Sem[i+1].attempt){
+//             index=Math.floor(i/2);
+//             count[index]=count[index]+1;
+//           }
+//         }
+//       } catch (error) {
+//         console.error('Error occurred while finding semester:', error);
+//         return null; // Return null or a default value for failed fetches
+//       }
+//     }));
+  
+    
+//     return count;
+// }
+
+
+const GenerateReportFirstAttempt = async (_id,semNo,fistAttemp) => {
+  
+  if(semNo%2!==0){
+       return ;
   }
-  const dse_key=existingAcademicYear.dse_key;
+  const index=semNo/2;
 
-  const student=GetStudentData(_id,current_sem)
-  const dseStudent=GetStudentData(dse_key,current_sem)
-  
-  console.log(student);
-  
-  if (Array.isArray(student) && Array.isArray(dseStudent)) {
-    // Combine the data from both arrays into a single array
-  const combinedData = student.map(pass_student => ({ pass_student, pass_student_dse }))
-    .concat(dseStudent.map(pass_student_dse => ({ pass_student_dse })));
+  const existingAcademicYear = await AcademicYear.findOne({ _id });
+  const dse_key = existingAcademicYear.dse_key;
 
-  AcademicYear.updateOne(
-    { _id: _id },
-    {
-      $push: {
-        without_kt: {
-          $each: combinedData,
-        },
-      },
-    },
-    (err, result) => {
-      if (err) {
-        console.error('Error updating document:', err);
-      } else {
-        console.log('Document updated successfully:', result);
+
+  const student = await GetStudentData(_id, index,fistAttemp);
+  const dseStudent = await GetStudentData(dse_key,index,fistAttemp);
+
+  console.log("student");
+  
+    const updatedData = {
+      pass_student: student,
+      pass_student_dse: dseStudent,
+    };
+    try {
+      if(fistAttemp){
+        const updatedAcademicYear = await AcademicYear.findOneAndUpdate(
+          { _id: _id },
+          {
+            $set: {
+              [`without_kt.${index-1}`]: updatedData,
+            },
+          },
+          { new: true, useFindAndModify: false }
+        );
+        console.log(updatedAcademicYear);
       }
+      else{
+        const updatedAcademicYear = await AcademicYear.findOneAndUpdate(
+          { _id: _id },
+          {
+            $set: {
+              [`with_kt.${index-1}`]: updatedData,
+            },
+          },
+          { new: true, useFindAndModify: false }
+        );
+        console.log(updatedAcademicYear);
+      }
+      
+    } catch (error) {
+      console.log(error);
     }
-  );
-} else {
-  console.error('Error: student and dseStudent should be arrays.');
-}
+    
+
 }
 
-const GetStudentData=async(_id,current_sem)=>{
-  let count=[0,0,0,0];
-  // const x={temp:0}
+// year whit sem Analisis
+// 1=2=>2-2=0,2-1=1
+// 2=4=>4-2=2,4-1=3
+// 3=6=>6-2=4,6-1=5
+// 4=8=>8-2=6,8-1=7
+
+
+const GetStudentData = async (_id, year,fistAttemp) => {
+  let count = 0;
+  const TotalSem=year*2;
+  const start=TotalSem-2;
+  const end=TotalSem-1;
   const students = await StudentData.find({ Ac_key: _id });
 
-  if(current_sem%2===0){
-    current_sem=current_sem/2;
-  }
-  else{
-    current_sem=Math.floor(current_sem/2);
-  }
 
   await Promise.all(students.map(async (item) => {
     try {
-      // Find the semester data for the student
       const result = await Semester.findOne({ st_key: item.Roll_No });
-
-      for(let i=0;i<current_sem*2;i=i+2){
-          if(result.Sem[i].attempt&&result.Sem[i+1].attempt){
-            index=Math.floor(i/2);
-            count[index]=count[index]+1;
+      if(fistAttemp){
+        for (let i = start; i <=end; i=i+2) {
+          if (result.Sem[i].attempt && result.Sem[i + 1].attempt) {
+              count = count+ 1;
           }
         }
-      } catch (error) {
-        console.error('Error occurred while finding semester:', error);
-        return null; // Return null or a default value for failed fetches
       }
-    }));
-  
-    return count;
+      else{
+        for (let i = start; i <=end; i=i+2) {
+          if (result.Sem[i].Status && result.Sem[i + 1].Status) {
+              count = count+ 1;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error occurred while finding semester:', error);
+      return null;
+    }
+  }));
+  return count;
 }
 
 

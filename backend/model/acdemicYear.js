@@ -1,8 +1,12 @@
 const mongoose = require("mongoose");
+
 const academicSchema = mongoose.Schema({
   Departname: {
     type: String,
     required: true,
+  },
+  year: {
+    type: Number,
   },
   Start_Year: {
     type: String,
@@ -31,9 +35,10 @@ const academicSchema = mongoose.Schema({
     type: Number,
     default: -1,
   },
+ 
   final_Revaluation:{
-    type:Boolean,
-    default:false
+    type:[Boolean],
+    default: [false, false, false, false, false, false, false, false]
   },
   without_kt:[{
        pass_student:Number,
@@ -44,4 +49,5 @@ const academicSchema = mongoose.Schema({
     pass_student_dse:Number
 }]
 });
+
 module.exports = mongoose.model("AcademicYear", academicSchema);

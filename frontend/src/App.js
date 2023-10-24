@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Home from './pages/dashboard';
 import Editbatch from './pages/editbatch';
@@ -17,7 +17,6 @@ import Forgot from "./pages/forgot"
 export default function App() {
   
   const loginStatus = window.localStorage.getItem('loginStatus');
-
  
   return (
     <>

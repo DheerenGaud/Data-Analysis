@@ -61,6 +61,19 @@ export const newAcdmicyear= async(data)=>{
          console.log("error is occur in adding new acdemic year by api")
    }
 }
+export const newDseAcdmicyear= async(data)=>{
+   try{
+        return await axios.post(`${BACKEND_URL}/newDCEAcdemicYear`,data,{
+         headers: {
+           'Content-Type': 'multipart/form-data',
+         },
+       })
+   }
+   catch(err){
+       console.log(err);
+         console.log("error is occur in adding new acdemic year by api")
+   }
+}
 
 export const studentByAcdmicYear= async(data)=>{
    try{
@@ -74,7 +87,6 @@ export const studentByAcdmicYear= async(data)=>{
 
 
 export const UpdateSem= async(data)=>{
-  console.log(data);
    try{
         return await axios.post(`${BACKEND_URL}/semesterData`,data)
    }
@@ -112,9 +124,17 @@ export const DownlodExcel = async (data) => {
     // Trigger a click on the <a> element to start the download
     a.click();
 
-    // Release the temporary URL
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error downloading Excel file:', error);
   }
 };
+
+
+export const downloadGetData =async(data)=>{
+  console.log(data);
+  return await axios.post(`${BACKEND_URL}/${data.document}`,data, {
+    responseType: 'blob', // Set the response type to 'blob' to handle binary data (i.e., the PDF file)
+  });
+
+}

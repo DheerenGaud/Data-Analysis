@@ -17,8 +17,8 @@ export default function Home() {
     return (
         <>
         <Box sx={{ display: 'flex' }}>
-        <Appbar pageName='Home' open={open} handleDrawerOpen={handleDrawerOpen} />
-    <Navbar open={open} handleDrawerClose={handleDrawerClose} />
+           <Appbar pageName='Home' open={open} handleDrawerOpen={handleDrawerOpen} />
+           <Navbar open={open} handleDrawerClose={handleDrawerClose} />
         </Box>
         </>  
     )

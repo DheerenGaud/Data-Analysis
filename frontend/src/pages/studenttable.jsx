@@ -11,7 +11,6 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import { visuallyHidden } from '@mui/utils';
 import SemesterSelect from '../components/Selectsemester';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import dayjs from 'dayjs';
 import { UpdateSem } from '../api/api';
@@ -143,34 +142,41 @@ EnhancedTableHead.propTypes = {
 };
 
 export default function EnhancedTable(props) {
-  const { allStudent,data,onChange} = props;
+  const { allStudent,data,onChange,Final_Revaluation ,refresh} = props;
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const kt_student = allStudent.filter((stu) => stu.Status === false);
   const [semData,setSemData]= useState({ 
     Departname:data.Departname,
     End_Year:data.End_Year,
     students:allStudent,
-    SemNo:-1,
+    SemNo:1,
     InternalYear:" ",
     ExternalYear:" ",
+    final_Revaluation:Final_Revaluation,
+    update_Kt:false
   })
   
+
+  useEffect(()=>{
+    semDataRef.current.final_Revaluation = Final_Revaluation;
+    setSemData({ ...semDataRef.current });
+  },[Final_Revaluation])
+
   const [students, setStudents] = useState([]);
   useEffect(()=>{
-    setStudents(allStudent)
-  },[allStudent])
+    if(semData.update_Kt){
+      setStudents(kt_student)
+    }
+    else{
+      setStudents(allStudent)
+    }
+  },[allStudent,semData.update_Kt])
 
   const semDataRef = useRef(semData);
   
-  // const addNewAtributeStudents = allStudent.map(student => ({
-  //   ...student,
-  //   Sgpi: null,     
-  //   Status: true,  
-  //   NoOfKts:0,
-  // }));
- 
 
 
   const handleRequestSort = (property) => {
@@ -223,6 +229,37 @@ export default function EnhancedTable(props) {
     );
     setStudents(updatedStudents);
   };
+
+  ////
+  const onchangeUpdateKt = (e) => {
+    if(!semData.update_Kt){
+      var x= window.confirm('Do you really want to Update Kt-Student');
+    }
+    if(x){
+      semDataRef.current.update_Kt = !semData.update_Kt;
+      semDataRef.current.students = kt_student;
+      setSemData({ ...semDataRef.current });
+    }
+    else{
+      semDataRef.current.update_Kt = e.target.value;
+      semDataRef.current.students = allStudent;
+      setSemData({ ...semDataRef.current });
+    }
+    // console.log(semDataRef.current);
+  };
+  const onchangeFinalREval = (e) => {
+    if(!semData.final_Revaluation){
+      var x= window.confirm('Do you really want to do Final Reevaluation?');
+    }
+    if(x){
+      semDataRef.current.final_Revaluation = !semData.final_Revaluation;
+      setSemData({ ...semDataRef.current });
+    }
+    else{
+      semDataRef.current.final_Revaluation = semData.final_Revaluation;
+      setSemData({ ...semDataRef.current });
+    }
+  };
   
   const handlDateChangeIn = (studentId, date) => {
     const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
@@ -243,26 +280,30 @@ setStudents(updatedStudents);
   
 
   const handleSaveData = async () => {
-    console.log(semDataRef.current);
-    semDataRef.current.students = students;
-     setSemData({ ...semDataRef.current });  
-    console.log(semDataRef.current);
-    try {
-      const x = await UpdateSem(semDataRef.current);
-      if(x.data.Status==="ok"){
-         alert(x.data.data)
+    const x= window.confirm('Do you really want to change in the Data?');
+
+    if(x){
+      semDataRef.current.students = students;
+       setSemData({ ...semDataRef.current });  
+    
+      try {
+        const x = await UpdateSem(semDataRef.current);
+        // console.log(x.data);
+        if(x.data.status==="ok"){
+           refresh();
+           alert(x.data.data)
+        }
+        else{
+          alert(x.data.data)
+        }
+      } catch (error) {
+        console.log(error);
       }
-      else{
-        alert(x.data.data)
-      }
-    } catch (error) {
-      console.log(error);
     }
 
   };
   
   const visibleRows = React.useMemo(
-
     () =>
       stableSort(students, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
@@ -282,9 +323,13 @@ return (
             onChange={handleSemesterChange}
             intrY={semData.InternalYear}
             onChangeintrY={onChangeintrY}
+            onchangeFinalREval={onchangeFinalREval}
             extrY={semData.ExternalYear}
             onChangeextrY={onChangeextrY}
             alignContent="flex-start"
+            Final_Revaluation={semData.final_Revaluation}
+            Update_Kt_student={onchangeUpdateKt}
+            update_Kt={semData.update_Kt}
           />
        
       </Box>
@@ -325,11 +370,9 @@ return (
                         />
                       </TableCell>
                       <TableCell align="center">
-                      
                       <Radio    checked={student.Status}  onClick={() =>
                             handleStatusChange(student.Roll_No,student.Status)
                        }/>
-                          
                       { student.Status==true?
                         <label>Pass</label>: <label>Fail</label>
                       } 
