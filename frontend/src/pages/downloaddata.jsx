@@ -79,26 +79,31 @@ export default function Downloaddata() {
         else{
           console.log(data);
             const response=await downloadGetData(data);
-        if (response.status === 200) {
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-  
-      const url = window.URL.createObjectURL(blob);
-  
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'academic-report.pdf'; // Set the desired filename
-      a.style.display = 'none';
-  
-      document.body.appendChild(a);
-      a.click();
-  
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+        if (response.status == 200) {
+              const blob = new Blob([response.data], { type: 'application/pdf' });
+          
+              const url = window.URL.createObjectURL(blob);
+              const filename = `${data.Departname}_${data.End_Year}_academic-report-${data.document}.pdf`;
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${filename}`; // Set the desired filename
+              a.style.display = 'none';
+              
+              document.body.appendChild(a);
+              a.click();
+              
+          
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
        } else {
-         console.error('Request failed with status:', response.status);
+        console.log(response);
+        // alert(response.data.message)
+        //  console.error('Request failed with status:', response.status);
        }
         }
       } catch (error) {
+
+
         console.error('Error downloading Excel file:', error);
       }
     }

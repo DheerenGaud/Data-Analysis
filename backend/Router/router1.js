@@ -26,7 +26,7 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
     const { Departname, Start_Year, End_Year } = req.body;
     
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[2];
+    const sheetName = workbook.SheetNames[5];
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
 
@@ -229,7 +229,14 @@ Router.post("/semesterData",async(req,res)=>{
 
       
            await UpdateSem(students,SemNo,InternalYear,ExternalYear,existingAcademicYear.final_Revaluation[SemNo-1],final_Revaluation,existingAcademicYear._id,existingAcademicYear.current_sem,update_Kt);
-           const data=  await GetAllStudentData(existingAcademicYear._id,SemNo-1);
+           var data=  await GetAllStudentData(existingAcademicYear._id,SemNo-1);
+           if(existingAcademicYear.dse_key){
+            // console.log(existingAcademicYear.dse_key);sw
+             const dseData= await GetAllStudentData(existingAcademicYear.dse_key,SemNo-1);
+            //  data=data.push(dseData);
+            data=[...data,...dseData];
+       
+           }
           return res.json({ status: "ok", data: "All student Semester updated successfully",value:data});
         }
         else{
@@ -244,7 +251,7 @@ Router.post("/semesterData",async(req,res)=>{
 
 Router.post("/generate-excel", async(req, res) => {
   const {Departname,End_Year}=req.body;
-  console.log(req.body)
+  // console.log(req.body)
   try {
     const existingAcademicYear = await AcademicYear.findOne({
       Departname: Departname,
@@ -316,7 +323,7 @@ Router.post("/generate-excel", async(req, res) => {
             rowData.push(semester.InternalYear); // Add internal year
             rowData.push(semester.ExternalYear); // Add external year
           } else {
-            console.log(semester);
+            // console.log(semester);
             if(semester.InternalYear===' '){
               console.log(semester.InternalKt);
               rowData.push(semester.InternalKt);
@@ -326,8 +333,8 @@ Router.post("/generate-excel", async(req, res) => {
             }
 
             if(semester.ExternalYear===' '){
-              console.log(semester.ExternalKt);
-              rowData.push(semester.ExternalKt);
+              // console.log(semester.ExternalKt);
+              // rowData.push(semester.ExternalKt);
             }
             else{
               rowData.push(semester.ExternalYear);
@@ -375,8 +382,15 @@ Router.post("/studentByAcdmicYear",async(req,res)=>{
     });
 
     if (existingAcademicYear) {
-     const data=  await GetAllStudentData(existingAcademicYear._id,index-1);
-     const x={data,final_Revaluation:existingAcademicYear.final_Revaluation[index-1]}
+     var data=  await GetAllStudentData(existingAcademicYear._id,index-1);
+     if(existingAcademicYear.dse_key){
+      // console.log(existingAcademicYear.dse_key);sw
+       const dseData= await GetAllStudentData(existingAcademicYear.dse_key,index-1);
+      //  data=data.push(dseData);
+      data=[...data,...dseData];
+     
+     }
+     const x={data:data,final_Revaluation:existingAcademicYear.final_Revaluation[index-1]}
      return res.json({ status: "ok", data:x,});    
    }
    else{
@@ -468,10 +482,6 @@ Router.post('/generate-pdf-withoutKt', async (req, res) => {
       columnStyles: { 0: { cellWidth: columnWidth } },
     });
 
-    // const pdfBuffer = doc.output();
-    // res.setHeader('Content-Disposition', 'attachment; filename=academic-report.pdf');
-    // res.setHeader('Content-Type', 'application/pdf');
-    // res.send(pdfBuffer);
 
 
     const filename = `${Departname}_${End_Year}_academic-report-withoutKT.pdf`;
@@ -482,9 +492,6 @@ Router.post('/generate-pdf-withoutKt', async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.send(pdfBuffer);
   
-    // Close the document
-  
-    doc.save(filename);
 
   } catch (error) {
     console.log('error => ' + error);
@@ -505,8 +512,8 @@ Router.post('/generate-pdf-withKt', async (req, res) => {
       year: previousYear,
     }).exec();
 
-    console.log(previousYear);
-    console.log(academicYear);
+    // console.log(previousYear);
+    // console.log(academicYear);
 
     if (academicYear) {
       academicYearsData.push(academicYear);
@@ -583,19 +590,27 @@ Router.post('/generate-pdf-withKt', async (req, res) => {
     columnStyles: { 0: { cellWidth: columnWidth } }, // Use cellWidth instead of columnWidth
   });
   
+  // const filename = `${Departname}_${End_Year}_academic-report-withKT.pdf`;
+
+  // Save or download the PDF
+  // console.log(filename);
+  // const pdfBuffer = doc.output();
+  // res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+  // res.setHeader('Content-Type', 'application/pdf');
+  // res.send(pdfBuffer);
   const filename = `${Departname}_${End_Year}_academic-report-withKT.pdf`;
 
   // Save or download the PDF
+  console.log(filename);
   const pdfBuffer = doc.output();
-  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"; filename*=UTF-8''${filename}`);
   res.setHeader('Content-Type', 'application/pdf');
   res.send(pdfBuffer);
+  
+  console.log(academicYearData);
+  
 
-  // Close the document
 
-  doc.save(filename);
-
-  // You can now use the academicYearData array for further processing or storage.
   console.log(academicYearData);
 }catch(error) {
   console.log('error => ' + error);

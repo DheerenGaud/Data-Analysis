@@ -180,8 +180,8 @@ onChange={handleChangeTypeStudent}
 fullWidth
 margin="normal"
 >
-<MenuItem value="normal">noraml</MenuItem>
-<MenuItem value="dse">dse</MenuItem>
+<MenuItem value="normal">Normal</MenuItem>
+<MenuItem value="dse">DSE</MenuItem>
 </TextField>
 
 </Grid>
