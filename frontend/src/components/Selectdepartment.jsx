@@ -1,10 +1,11 @@
 import React from 'react';
 import { TextField, MenuItem } from '@mui/material';
 
-const DepartmentSelect = ({ value, onChange }) => {
+const DepartmentSelect = ({ value, onChange}) => {
   return (
     <TextField
       select
+
       label="Select Department"
       value={value}
       onChange={onChange}

@@ -68,13 +68,12 @@ exports.GetAllStudentData = async (Ac_key, index) => {
       try {
         // Find the semester data for the student
         const result = await Semester.findOne({ st_key: item.Roll_No });
-
-        
         if (result) {
           // Check if the semester data and the index exist before accessing them
           if (result.Sem && result.Sem[index]) {
             return {
               Name: item.Name,
+              ADC:item.ADC,
               Roll_No: item.Roll_No,
               Sgpi: result.Sem[index].Sgpi,
               Status: result.Sem[index].Status,
@@ -106,9 +105,6 @@ exports.GetAllStudentData = async (Ac_key, index) => {
     throw new Error('Error occurred while adding students');
   }
 };
-
-
-
 
 exports.CheckUnqueStudent = async (jsonData) => {
   try {
@@ -180,11 +176,13 @@ exports.UpdateSem = async (students,semNo,InternalYear,ExternalYear,final_Eval_B
         const bol=studentSem.Sem[index].Status
         const sum=studentSem.Sem[index].InternalKt+ studentSem.Sem[index].ExternalKt;
         const attempt=studentSem.Sem[index].attempt
-
+        if(sum===-2){
+             console.log(sum);
+        }
+        else{
         if(!Status){
 
             // console.log("attemp");
-
            if(attempt==true){
             studentSem.Sem[index].attempt=false
            }
@@ -207,16 +205,22 @@ exports.UpdateSem = async (students,semNo,InternalYear,ExternalYear,final_Eval_B
              studentSem.Sem[index].ExternalKt=extrKt;
            }
 
-           if(data.InternalYear!==" "){
+           if(inteKt===0){
             studentSem.Sem[index].InternalYear=InternalYear;
            }
-           if(data.ExternalYear!==" "){
+           else{
+            studentSem.Sem[index].InternalYear=" ";
+           }
+           if(extrKt===0){
             studentSem.Sem[index].ExternalYear=ExternalYear;
+           }
+           else{
+            studentSem.Sem[index].ExternalYear=" ";
            }
         }
         else{
           // evalution mai pass huaa hai
-          if(final_eval_front&&!final_Eval_Back&&!attempt){
+          if(final_eval_front&&!final_Eval_Back&&!attempt||!final_eval_front){
        
             studentSem.Sem[index].attempt=true;
 
@@ -238,17 +242,23 @@ exports.UpdateSem = async (students,semNo,InternalYear,ExternalYear,final_Eval_B
             }
           }             
             
-          if(studentSem.Sem[index].ExternalYear===" "){
-            studentSem.Sem[index].InternalYear = InternalYear;
-          }
-          if(studentSem.Sem[index].ExternalYear===" "){
-            studentSem.Sem[index].ExternalYear = ExternalYear; 
+          // if(studentSem.Sem[index].ExternalYear===" "){
+            //   studentSem.Sem[index].InternalYear = InternalYear;
+            // }
+            // if(studentSem.Sem[index].ExternalYear===" "){
+              //   studentSem.Sem[index].ExternalYear = ExternalYear; 
+              // }
+
+          if(!final_eval_front||update_Kt&&final_eval_front){
+              studentSem.Sem[index].InternalYear = InternalYear;
+              studentSem.Sem[index].ExternalYear = ExternalYear; 
           }
           
         }     
          studentSem.Sem[index].Status = Status;
          studentSem.Sem[index].Sgpi = Sgpi;
-         await studentSem.save()
+         await studentSem.save()   
+        }
       }
       else{
         errors.push('this student is not exsist  ' +st_key);
@@ -268,7 +278,6 @@ exports.UpdateSem = async (students,semNo,InternalYear,ExternalYear,final_Eval_B
     
     if(final_eval_front&&!final_Eval_Back){
       try {
-        console.log("HEKLLSNKJHJFRHOHIOHERFHRI");
             GenerateReportFirstAttempt(_id,semNo,true,update_Kt);
             GenerateReportFirstAttempt(_id,semNo,false,update_Kt);
             await AcademicYear.updateOne(
@@ -295,6 +304,83 @@ exports.UpdateSem = async (students,semNo,InternalYear,ExternalYear,final_Eval_B
   }
 };
 
+
+// exports.UpdateADC=async(students,semNo,_id)=>{
+//   try { 
+//     let count=0;
+//     for (const data of students) {
+//       const Roll_No = data.Roll_No;
+      
+//       const ADC=data.ADC;
+//       const student = await StudentData.findOne({Roll_No:Roll_No});
+//       if(student.ADC!==ADC){
+//         const semData= await Semester.findOne({st_key:Roll_No})
+//         // console.log(semData);    
+//         for (let index = semNo-1; index <8; index++) {
+//           semData.Sem[index].ExternalKt=-1;
+//           semData.Sem[index].InternalKt=-1;
+//           semData.Sem[index].InternalYear="ADC";
+//           semData.Sem[index].InternalKt="ADC";
+//           semData.Sem[index].Status=false;
+//           semData.Sem[index].attempt=false;
+//         }
+//         semData.save();
+//         count+=1;
+//         student.ADC=ADC
+//         await student.save();
+//       }
+//     }
+//     const acdemicYear= await AcademicYear.findOne(_id);
+//     acdemicYear.No_of_ADC_Student+=count;
+//     acdemicYear.No_of_student-=count;
+//     await acdemicYear.save();
+
+//   } catch (error) {
+//     // console.log(error);
+//     throw new Error('Error occurred while ADC Update');
+//   }
+
+// }
+exports.UpdateADC = async (students, semNo, _id) => {
+  try {
+    let count = 0;
+    for (const data of students) {
+      const Roll_No = data.Roll_No;
+      const ADC = data.ADC;
+      const student = await StudentData.findOne({ Roll_No: Roll_No });
+
+      if (student.ADC != ADC) {
+        const semData = await Semester.findOne({ st_key: Roll_No });
+        
+        // Reset the values for Sem[index] to appropriate numeric values
+        for (let index = semNo - 1; index < 8; index++) {
+          semData.Sem[index].ExternalKt = -1;
+          semData.Sem[index].InternalKt = -1;
+          semData.Sem[index].InternalYear =" ADS"; 
+          semData.Sem[index].ExternalYear =" ADS"; 
+          semData.Sem[index].Status = false;
+          semData.Sem[index].attempt = false;
+        }
+        semData.save();
+        count += 1;
+        
+        student.ADC = ADC;
+        await student.save();
+      }
+    }
+    
+    const academicYear = await AcademicYear.findOne({ _id });
+    academicYear.No_of_ADC_Student += count;
+    academicYear.No_of_student -= count;
+    await academicYear.save();
+  } catch (error) {
+    // Handle the error
+    console.error(error);
+    throw new Error('Error occurred while ADC Update');
+  }
+};
+
+
 const GenerateReportFirstAttempt = async (_id,semNo,fistAttemp,update_Kt) => {
   
   if(semNo%2!==0&&!update_Kt){
@@ -304,16 +390,18 @@ const GenerateReportFirstAttempt = async (_id,semNo,fistAttemp,update_Kt) => {
 
   const existingAcademicYear = await AcademicYear.findOne({ _id });
   const dse_key = existingAcademicYear.dse_key;
-
+  const branch_change_key = existingAcademicYear.branch_change_key;
 
   const student = await GetStudentData(_id, index,fistAttemp);
   const dseStudent = await GetStudentData(dse_key,index,fistAttemp);
+  const branchChangeStudent = await GetStudentData(branch_change_key,index,fistAttemp);
 
   console.log("student");
   
     const updatedData = {
       pass_student: student,
       pass_student_dse: dseStudent,
+      pass_branch_Change_stu:branchChangeStudent,
     };
     try {
       if(fistAttemp){

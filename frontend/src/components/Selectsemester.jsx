@@ -7,7 +7,7 @@ import Radio from '@mui/material/Radio';
 import Grid from '@mui/material/Grid';
 
 
-const SemesterSelect = ({ value, onChange ,onChangeintrY,intrY,extrY,onChangeextrY, onchangeFinalREval,Final_Revaluation,update_Kt,Update_Kt_student}) => {
+const SemesterSelect = ({ value, onChange ,onChangeintrY,intrY,extrY,onChangeextrY, onchangeFinalREval,Final_Revaluation,update_Kt,Update_Kt_student,add_Adc_student,add_Adc}) => {
     return (
         <Grid container spacing={1} alignItems="center" direction={'row'}>
             <Grid item xs={4} md={4}>
@@ -46,7 +46,10 @@ const SemesterSelect = ({ value, onChange ,onChangeintrY,intrY,extrY,onChangeext
             <Grid item xs={4} md={4}  className='pageStyle'>
                 <Radio checked={update_Kt}  onClick={Update_Kt_student}/>
                 <label htmlFor="">(Update Kt-Student)</label>
-
+            </Grid>
+            <Grid item xs={4} md={4}  className='pageStyle'>
+                <Radio checked={add_Adc}  onClick={add_Adc_student}/>
+                <label htmlFor="">(Add Adc)</label>
             </Grid>
                
               

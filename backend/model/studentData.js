@@ -25,7 +25,10 @@ const studentSchema = mongoose.Schema({
     required: true,
     refPath: "Ac_model",
   },
-  
+  ADC:{
+    type:Boolean,
+    default:false
+  },
 });
 // Ac_model: {
 //   type: String,

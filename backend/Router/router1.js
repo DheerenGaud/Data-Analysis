@@ -12,7 +12,8 @@ const AcademicYear =require("../model/acdemicYear")
 const Semester =require("../model/semester")
 const StudentData=require("../model/studentData")
 const DceAcademicYear =require("../model/dseAcdmicyr")
-const {AddStudent,CheckUnqueStudent,DeleteStudent,UpdateSem,FindAll,GetAllStudentData}=require("../commonFunction/helper");
+const BranchChangeAcademicY =require("../model/brranch_chnage")
+const {AddStudent,CheckUnqueStudent,DeleteStudent,UpdateSem,FindAll,GetAllStudentData,UpdateADC}=require("../commonFunction/helper");
 const acdemicYear = require("../model/acdemicYear");
 const uplode =multer()
 
@@ -23,10 +24,11 @@ Router.get("",(req,res)=>{
 
 Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
   try {
-    const { Departname, Start_Year, End_Year } = req.body;
-    
+    const { Departname, Start_Year, End_Year,No_of_tfws,No_of_j_k} = req.body;
+     console.log(req.body);
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[5];
+    // const sheetName = workbook.SheetNames[5];// my class 
+    const sheetName = workbook.SheetNames[2]; // congraculation
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
 
@@ -46,20 +48,24 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
     }
     console.log(jsonData.length);
 
-    if (!existingAcademicYear) {
+    if (!existingAcademicYear){
       const year = dayjs(End_Year,'MMMM YYYY').year();
-
       const newAcademicYear = await AcademicYear.create({
         Departname,
         Start_Year,
         End_Year,
         No_of_student:jsonData.length,
         current_sem:1,
-        year:year
+        year:year,
+        No_of_tfws,
+        No_of_j_k,
       });
       await AddStudent(jsonData, newAcademicYear._id);
       return res.json({ status: "ok", data: "All student data entered successfully" });
     } else {
+    
+      existingAcademicYear.No_of_student += jsonData.length;
+      await existingAcademicYear.save();
       await AddStudent(jsonData, existingAcademicYear._id);
       return res.json({ status: "ok", data: "Successfully Added New Student!!" });
     }
@@ -94,17 +100,30 @@ Router.post("/newDCEAcdemicYear", uplode.single("file"), async (req, res) => {
     }
 
     if (!existingAcademicYear) {
-      const newAcademicYear = await DceAcademicYear.create({
-        Departname,
-        Start_Year,
-        End_Year,
+      const AcdmicYearExixt = await AcademicYear.findOne({
+        Departname: Departname,
+        End_Year: End_Year,
       });
-
-      await AcademicYear.updateOne({Departname,End_Year},{No_of_dse:jsonData.length,dse_key:newAcademicYear._id})
-
-      await AddStudent(jsonData, newAcademicYear._id);
-      return res.json({ status: "ok", data: "All student data entered successfully" });
+      if(AcdmicYearExixt){
+        const newAcademicYear = await DceAcademicYear.create({
+          Departname,
+          Start_Year,
+          End_Year,
+        });
+        await AcademicYear.updateOne({Departname,End_Year},{No_of_dse:jsonData.length,dse_key:newAcademicYear._id})
+  
+        await AddStudent(jsonData, newAcademicYear._id);
+        return res.json({ status: "ok", data: "All student data entered successfully" });
+      }else{
+        return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
+      }
+  
     } else {
+      const academicYear = await AcademicYear.findOne({ Departname, End_Year });
+      if (academicYear) {
+        academicYear.No_of_dse += jsonData.length;
+      }
+      await academicYear.save();
       await AddStudent(jsonData, existingAcademicYear._id);
       return res.json({ status: "ok", data: "Successfully Added New Student!!" });
     }
@@ -114,8 +133,70 @@ Router.post("/newDCEAcdemicYear", uplode.single("file"), async (req, res) => {
   }
 });
 
-Router.post("/Individual",async(req,res)=>{
-    const {Departname,Start_Year,End_Year,No_of_student,students}=req.body;
+Router.post("/branchChange", uplode.single("file"), async (req, res) => {
+  try {
+    const { Departname, Start_Year, End_Year,Previous_Departname} = req.body;
+    
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[2];
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
+
+    const existingAcademicYear = await BranchChangeAcademicY.findOne({
+      Departname: Departname,
+      End_Year: End_Year,
+    });
+
+    const duplicates = await BranchChangeAcademicY(jsonData);
+
+    if (duplicates.size !== 0) {
+      return res.json({
+        status: 'error',
+        data :`These students Allready  in ${Departname} Departname of Acadmic Year - ${End_Year-12000} to ${End_Year}`,
+        value: Array.from(duplicates),
+      });
+    }
+     
+    if (!existingAcademicYear) {
+       
+      const data=jsonData.map((stu)=>{
+          return {Roll_No:stu.Roll_No,Departname:Previous_Departname}
+      })
+
+      const newAcademicYear = await BranchChangeAcademicY.create({
+        Departname,
+        Start_Year,
+        End_Year,
+        Previous_Departname:data
+      });
+
+      await AcademicYear.updateOne({Departname,End_Year},{No_of_Branch_Student:jsonData.length,branch_change_key:newAcademicYear._id})
+      await AddStudent(jsonData, newAcademicYear._id);
+      return res.json({ status: "ok", data: "All student data entered successfully" });
+    } else {
+      // const =
+      const academicYear = await AcademicYear.findOne({ Departname, End_Year });
+      const data=jsonData.map((stu)=>{
+        return {Roll_No:stu.Roll_No,Departname:Previous_Departname}
+    })
+      existingAcademicYear.Previous_Departname=[...existingAcademicYear.Previous_Departname,...data]
+      await existingAcademicYear.save();
+      if (academicYear) {
+        academicYear.No_of_Branch_Student += jsonData.length;
+      }
+      await academicYear.save();
+      await AddStudent(jsonData, existingAcademicYear._id);
+      return res.json({ status: "ok", data: "Successfully Added New Student!!" });
+    }
+  } catch (error) {
+    console.log('error => ' + error);
+    return res.status(500).json({ status: 'error', data: 'Internal server error.' });
+  }
+});
+
+Router.post("/Individual/normal",async(req,res)=>{
+    const {Departname,Start_Year,End_Year,students,No_of_tfws,No_of_j_k}=req.body;
+    console.log(req.body);
     const duplicates = await CheckUnqueStudent(students);
     try {
          const existingAcademicYear = await AcademicYear.findOne({
@@ -130,16 +211,33 @@ Router.post("/Individual",async(req,res)=>{
             });
           }  
           if (!existingAcademicYear) {
-            const newAcademicYear = await AcademicYear.create({
-              Departname,
-              Start_Year,
-              End_Year,
-              No_of_student,
+            const AcdmicYearExixt = await AcademicYear.findOne({
+              Departname: Departname,
+              End_Year: End_Year,
             });
-            await AddStudent(students, newAcademicYear._id);
-            return res.json({ status: "ok", data: "All student data entered successfully"});
+            if(AcdmicYearExixt){
+              const year = dayjs(End_Year,'MMMM YYYY').year();
+              const newAcademicYear = await AcademicYear.create({
+                Departname,
+                Start_Year,
+                End_Year,
+                No_of_student:1,
+                year,
+                current_sem:1,
+                No_of_tfws,
+                No_of_j_k,
+              });
+              await AddStudent(students, newAcademicYear._id);
+              return res.json({ status: "ok", data: "All student data entered successfully"});
+            }
+            else{
+              return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
+
+            }     
           }
           else{
+            existingAcademicYear.No_of_student += 1;
+            await existingAcademicYear.save();
             await AddStudent(students, existingAcademicYear._id);
             return res.json({ status: "ok", data: "Successfully Added New Student!!" });
           } 
@@ -148,6 +246,144 @@ Router.post("/Individual",async(req,res)=>{
       return res.status(500).json({ status: 'error', data: 'Internal server error.' });
     }
    
+})
+
+Router.post("/Individual/dse",async(req,res)=>{
+  const {Departname,Start_Year,End_Year,students}=req.body;
+  const duplicates = await CheckUnqueStudent(students);
+  try {
+       const existingAcademicYear = await DceAcademicYear.findOne({
+          Departname: Departname,
+          End_Year: End_Year,
+        });
+        if (duplicates.size !== 0) {
+          return res.json({
+            status: 'error',
+            data :`These students Allready  in ${Departname} Departname of Acadmic Year - ${End_Year-12000} to ${End_Year}`,
+            value: Array.from(duplicates),
+          });
+        }  
+        if (!existingAcademicYear) {
+          const AcdmicYearExixt = await AcademicYear.findOne({
+            Departname: Departname,
+            End_Year: End_Year,
+          });
+          if(AcdmicYearExixt){
+            const newAcademicYear = await DceAcademicYear.create({
+              Departname,
+              Start_Year,
+              End_Year,
+            });
+            await AcademicYear.updateOne({Departname,End_Year},{No_of_dse:1,dse_key:newAcademicYear._id})
+  
+            await AddStudent(students, newAcademicYear._id);
+            return res.json({ status: "ok", data: "All student data entered successfully"});
+          }
+          else{
+            return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
+          }     
+        }
+        else{
+          const academicYear = await AcademicYear.findOne({ Departname, End_Year });
+          if (academicYear) {
+            academicYear.No_of_dse += 1;
+          }
+          await academicYear.save();
+          await AddStudent(students, existingAcademicYear._id);
+          return res.json({ status: "ok", data: "Successfully Added New Student!!" });
+        } 
+  } catch (error) {
+    console.log('error => ' + error);
+    return res.status(500).json({ status: 'error', data: 'Internal server error.' });
+  }
+ 
+})
+
+Router.post("/Individual/branchChange",async(req,res)=>{
+  const {Departname,Start_Year,End_Year,students,Previous_Departname,Previous_Roll_No}=req.body;
+
+  if(Departname===Previous_Departname){
+    return res.json({ status: "error", data: "Both Deparment are same" });
+  }
+
+  const duplicates = await CheckUnqueStudent(students);
+  try {
+       const existingAcademicYear = await BranchChangeAcademicY.findOne({
+        Departname,
+        End_Year,
+        });
+        if (duplicates.size !== 0) {
+          return res.json({
+            status: 'error',
+            data :`These students Allready  in ${Departname} Departname of Acadmic Year - ${End_Year-12000} to ${End_Year}`,
+            value: Array.from(duplicates),
+          });
+        } 
+        
+
+       const priStudent=await StudentData.findOne({Roll_No:Previous_Roll_No});
+
+       if(priStudent){
+        const PriAcdmicYear = await AcademicYear.findOne({
+          Departname: Previous_Departname,
+          End_Year: End_Year,
+        });
+        if(PriAcdmicYear&&PriAcdmicYear._id.toString()==priStudent.Ac_key.toString()){
+               /// delete student from priveous brach
+          
+               const AcdmicYearExixt = await AcademicYear.findOne({
+                 Departname: Departname,
+                 End_Year: End_Year,
+               });
+
+               if(AcdmicYearExixt){
+                const prevSemData= await Semester.findOne({st_key:Previous_Roll_No})
+                prevSemData.st_key=students[0].Roll_No;
+                PriAcdmicYear.No_of_student-=1; // remove
+                priStudent.Roll_No=students[0].Roll_No;
+                await prevSemData.save();
+                await PriAcdmicYear.save();
+                await priStudent.save();
+               if (!existingAcademicYear) {
+                  const data=[{Roll_No:students[0].Roll_No,Departname:Previous_Departname}]
+                  const newAcademicYear = await BranchChangeAcademicY.create({
+                    Departname,
+                    Start_Year,
+                    End_Year,
+                    Previous_Departname:data
+                  });
+                  priStudent.Ac_key=newAcademicYear._id;
+                  await AcademicYear.updateOne({Departname,End_Year},{No_of_Branch_Student:1,branch_change_key:newAcademicYear._id})// add 
+                  await priStudent.save();
+                  return res.json({ status: "ok", data: "All student data entered successfully"});
+                }
+                else{
+                  priStudent.Ac_key=existingAcademicYear._id;
+                  AcdmicYearExixt.No_of_Branch_Student += 1;
+                  const data=[{Roll_No:students[0].Roll_No,Departname:Previous_Departname}]
+                  existingAcademicYear.Previous_Departname=[...existingAcademicYear.Previous_Departname,...data]
+                  await existingAcademicYear.save();
+                  await AcdmicYearExixt.save();
+                  await priStudent.save();
+                  return res.json({ status: "ok", data: "Successfully Added New Student!!" });
+                } 
+              }
+              else{
+                return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
+              }     
+              }
+        else{
+          return res.json({ status: "error", data: "Previous Departname not contain this roll no "+Previous_Roll_No });
+        }   
+       }else{
+        return res.json({ status: "error", data: "Roll no is not Exist "+Previous_Roll_No });
+       }
+        
+  } catch (error) {
+    console.log('error => ' + error);
+    return res.status(500).json({ status: 'error', data: 'Internal server error.' });
+  }
+ 
 })
 
 Router.delete("/deleteStudent",async(req,res)=>{
@@ -182,12 +418,10 @@ Router.delete("/deleteStudent",async(req,res)=>{
 })
 
 Router.post("/semesterData",async(req,res)=>{
-  const {Departname,End_Year,students,SemNo, InternalYear,ExternalYear,final_Revaluation,update_Kt}=req.body;
-  //  console.log(req.body);
+  const {Departname,End_Year,students,SemNo,InternalYear,ExternalYear,final_Revaluation,update_Kt,add_Adc}=req.body;
   const NotFound = await FindAll(students);
 
   try {
-
     if(NotFound.size!==0){
       return res.json({
         status: 'error',
@@ -199,12 +433,8 @@ Router.post("/semesterData",async(req,res)=>{
           Departname: Departname,
           End_Year: End_Year,
         });
-        
-       
-        
-        
+
         if (existingAcademicYear) {
-          
           if(existingAcademicYear.final_Revaluation[SemNo-1]&&!update_Kt){
              return res.json({ status: "ok", data: "Final Revaluation is Alredy Done !!!! If you Want to Update KtStudent then Select KtUpdate so Data can't update "});
            }
@@ -227,16 +457,21 @@ Router.post("/semesterData",async(req,res)=>{
           }
           
 
-      
-           await UpdateSem(students,SemNo,InternalYear,ExternalYear,existingAcademicYear.final_Revaluation[SemNo-1],final_Revaluation,existingAcademicYear._id,existingAcademicYear.current_sem,update_Kt);
+           if(add_Adc){
+             await UpdateADC(students,SemNo,existingAcademicYear._id)
+           }
+           else{
+             await UpdateSem(students,SemNo,InternalYear,ExternalYear,existingAcademicYear.final_Revaluation[SemNo-1],final_Revaluation,existingAcademicYear._id,existingAcademicYear.current_sem,update_Kt);
+           }
            var data=  await GetAllStudentData(existingAcademicYear._id,SemNo-1);
            if(existingAcademicYear.dse_key){
-            // console.log(existingAcademicYear.dse_key);sw
              const dseData= await GetAllStudentData(existingAcademicYear.dse_key,SemNo-1);
-            //  data=data.push(dseData);
             data=[...data,...dseData];
-       
            }
+           if(existingAcademicYear.branch_change_key){
+            const dseData= await GetAllStudentData(existingAcademicYear.branch_change_key,SemNo-1);
+           data=[...data,...dseData];
+          }
           return res.json({ status: "ok", data: "All student Semester updated successfully",value:data});
         }
         else{
@@ -259,8 +494,12 @@ Router.post("/generate-excel", async(req, res) => {
     });
 
     if (existingAcademicYear) {
-      const AllStudent = await StudentData.find({ Ac_key: existingAcademicYear._id });
+      let AllStudent = await StudentData.find({ Ac_key: existingAcademicYear._id });
+      const AllStudentDSE = await StudentData.find({ Ac_key: existingAcademicYear.dse_key });
+      const AllStudentBRAchChange = await StudentData.find({ Ac_key: existingAcademicYear.branch_change_key });
    
+      AllStudent=[...AllStudent,...AllStudentDSE,...AllStudentBRAchChange]
+
       const worksheetData = AllStudent.map((Student, index) => ({
         S_no: index + 1,
         Roll_No: Student.Roll_No,
@@ -325,7 +564,6 @@ Router.post("/generate-excel", async(req, res) => {
           } else {
             // console.log(semester);
             if(semester.InternalYear===' '){
-              console.log(semester.InternalKt);
               rowData.push(semester.InternalKt);
             }
             else{
@@ -334,7 +572,7 @@ Router.post("/generate-excel", async(req, res) => {
 
             if(semester.ExternalYear===' '){
               // console.log(semester.ExternalKt);
-              // rowData.push(semester.ExternalKt);
+              rowData.push(semester.ExternalKt);
             }
             else{
               rowData.push(semester.ExternalYear);
@@ -343,7 +581,7 @@ Router.post("/generate-excel", async(req, res) => {
         });
       
         // Add Kt_count and RESULT values
-        rowData.push(stude.Kt_count);
+        // rowData.push(stude.Kt_count);
         rowData.push(""); // Leave RESULT cell empty for now
       
         worksheet.addRow(rowData);
@@ -384,11 +622,14 @@ Router.post("/studentByAcdmicYear",async(req,res)=>{
     if (existingAcademicYear) {
      var data=  await GetAllStudentData(existingAcademicYear._id,index-1);
      if(existingAcademicYear.dse_key){
-      // console.log(existingAcademicYear.dse_key);sw
+      // console.log(existingAcademicYear.dse_key);
        const dseData= await GetAllStudentData(existingAcademicYear.dse_key,index-1);
-      //  data=data.push(dseData);
       data=[...data,...dseData];
-     
+     }
+
+     if(existingAcademicYear.branch_change_key){
+      const branchChange= await GetAllStudentData(existingAcademicYear.branch_change_key,index-1);
+      data=[...data,...branchChange];
      }
      const x={data:data,final_Revaluation:existingAcademicYear.final_Revaluation[index-1]}
      return res.json({ status: "ok", data:x,});    
@@ -410,13 +651,11 @@ Router.post('/generate-pdf-withoutKt', async (req, res) => {
     const academicYearsData = [];
 
     const previousYear = dayjs(End_Year,'MMMM YYYY').year();
-    console.log(previousYear);
     const academicYear = await AcademicYear.findOne({
       Departname,
       year : previousYear,
     }).exec();
 
-    console.log(academicYear);
 
     if (academicYear) {
       academicYearsData.push(academicYear);
@@ -446,7 +685,7 @@ Router.post('/generate-pdf-withoutKt', async (req, res) => {
       keywords: 'academic, report, data',
     });
 
-    const tableData = [['Year of Entry', 'Admitted student (Normal Student + DSE student)', 'I Year', 'II Year', 'III Year', 'IV Year']];
+    const tableData = [['Year of Entry', 'Admitted student (Normal Student + DSE student + Branch-Change)', 'I Year', 'II Year', 'III Year', 'IV Year']];
 
     academicYearsData.forEach((academicYear) => {
       const entryYear = `${academicYear.Start_Year}-${academicYear.End_Year}`;
@@ -454,18 +693,27 @@ Router.post('/generate-pdf-withoutKt', async (req, res) => {
 
       const normalStudentCount = academicYear.No_of_student || 0;
       let dseStudent = academicYear.No_of_dse || 0;
+      let BarchStu = academicYear.No_of_Branch_Student || 0;
 
       if (dseStudent === -1) {
         dseStudent = 0;
       }
 
       const yearRow = [entryYear];
+      
+      if(BarchStu===-1){
+        yearRow.push(`${normalStudentCount} + ${dseStudent}`);
+        withoutKtArray.forEach((withoutKt) => {
+          yearRow.push(`${withoutKt.pass_student} + ${withoutKt.pass_student_dse}`);
+        });
+      }
+      else{
+        yearRow.push(`${normalStudentCount} + ${dseStudent} + ${BarchStu}`);
+        withoutKtArray.forEach((withoutKt) => {
+          yearRow.push(`${withoutKt.pass_student} + ${withoutKt.pass_student_dse} + ${withoutKt.pass_branch_Change_stu}`);
+        });
+      }
 
-      yearRow.push(`${normalStudentCount} + ${dseStudent}`);
-
-      withoutKtArray.forEach((withoutKt) => {
-        yearRow.push(`${withoutKt.pass_student} + ${withoutKt.pass_student_dse}`);
-      });
 
       tableData.push(yearRow);
     });
@@ -544,31 +792,35 @@ Router.post('/generate-pdf-withKt', async (req, res) => {
     keywords: 'academic, report, data',
   });
 
-  const tableData = [['Year of Entry', 'Admited student(Normal Student + DSE student )','I Year', 'II Year', 'III Year', 'IV Year']];
+  const tableData = [['Year of Entry', 'Admitted student (Normal Student + DSE student + Branch-Change)', 'I Year', 'II Year', 'III Year', 'IV Year']];
 
   const academicYearData = [];
 
   academicYearsData.forEach((academicYear) => {
     const entryYear = `${academicYear.Start_Year}-${academicYear.End_Year}`;
     const withKt = academicYear.with_kt;
-    const normalstudentcount = academicYear.No_of_student || 0; 
+    const normalStudentCount = academicYear.No_of_student || 0; 
     let dsestudent = academicYear.No_of_dse || 0; 
-    console.log(normalstudentcount)
+    let BarchStu = academicYear.No_of_Branch_Student || 0;
+  
     if (dsestudent === -1) {
       dsestudent = 0;
     }
-
-
     const yearRow = [entryYear];
 
-    yearRow.push(`${normalstudentcount} + ${dsestudent}`)
-
-    withKt.forEach((withKt) => {
-
-        yearRow.push(`${withKt.pass_student} + ${withKt.pass_student_dse}`);
-
-    });
     
+    if(BarchStu===-1){
+      yearRow.push(`${normalStudentCount} + ${dsestudent}`);
+      withKt.forEach((withoutKt) => {
+        yearRow.push(`${withoutKt.pass_student} + ${withoutKt.pass_student_dse}`);
+      });
+    }
+    else{
+      yearRow.push(`${normalStudentCount} + ${dsestudent} + ${BarchStu}`);
+      withKt.forEach((withoutKt) => {
+        yearRow.push(`${withoutKt.pass_student} + ${withoutKt.pass_student_dse} + ${withoutKt.pass_branch_Change_stu}`);
+      });
+    }
 
     tableData.push(yearRow);
 

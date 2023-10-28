@@ -61,6 +61,15 @@ export const newAcdmicyear= async(data)=>{
          console.log("error is occur in adding new acdemic year by api")
    }
 }
+export const addStudentIndividul= async(data)=>{
+   try{
+        return await axios.post(`${BACKEND_URL}/Individual/${data.typeOfStudent}`,data)
+   }
+   catch(err){
+       console.log(err);
+         console.log("error is occur in adding new acdemic year by api")
+   }
+}
 export const newDseAcdmicyear= async(data)=>{
    try{
         return await axios.post(`${BACKEND_URL}/newDCEAcdemicYear`,data,{

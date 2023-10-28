@@ -101,35 +101,86 @@ const headCells = [
 ];
 
 
+const UpdateADC = [
+  {
+    id: 'name',
+    numeric: false,
+    disablePadding: true,
+    label: 'Students Name',
+  },
+  {
+    id: 'rollno',
+    numeric: true,
+    disablePadding: false,
+    label: 'Roll No.',
+  },
+  {
+    id: 'ADC',
+    numeric: true,
+    disablePadding: false,
+    label: 'ADC ',
+  },
+ 
+ 
+  
+];
+
+
 
 function EnhancedTableHead(props) {
-  const { order, orderBy, onRequestSort} = props;
+  const { order, orderBy, onRequestSort,add_Adc} = props;
 
   return (
     <TableHead>
       <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={'center'}
-            width={'5vw'}
-           
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={() => onRequestSort(headCell.id)}
+        {
+          !add_Adc?
+          (headCells.map((headCell) => (
+            <TableCell
+              key={headCell.id}
+              align={'center'}
+              width={'5vw'}
+             
+              sortDirection={orderBy === headCell.id ? order : false}
             >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : 'asc'}
+                onClick={() => onRequestSort(headCell.id)}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          ))):(
+           UpdateADC.map((headCell) => (
+            <TableCell
+              key={headCell.id}
+              align={'center'}
+              width={'5vw'}
+             
+              sortDirection={orderBy === headCell.id ? order : false}
+            >
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : 'asc'}
+                onClick={() => onRequestSort(headCell.id)}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          ))
+          )
+        }
       </TableRow>
     </TableHead>
   );
@@ -156,9 +207,11 @@ export default function EnhancedTable(props) {
     InternalYear:" ",
     ExternalYear:" ",
     final_Revaluation:Final_Revaluation,
-    update_Kt:false
+    update_Kt:false,
+    add_Adc:false
   })
-  
+
+  console.log(allStudent);
 
   useEffect(()=>{
     semDataRef.current.final_Revaluation = Final_Revaluation;
@@ -166,6 +219,8 @@ export default function EnhancedTable(props) {
   },[Final_Revaluation])
 
   const [students, setStudents] = useState([]);
+  const [studentsADc, setStudentsADc] = useState([]);
+
   useEffect(()=>{
     if(semData.update_Kt){
       setStudents(kt_student)
@@ -209,25 +264,28 @@ export default function EnhancedTable(props) {
     const formattedDate = dayjs(date).format('MMMM YYYY'); // Format the date as "Month Year"
     semDataRef.current.ExternalYear = formattedDate;
     setSemData({ ...semDataRef.current });
-  
   };
 
   const handleSgpiChange = (studentId, value,name) => {
     const numericValue = parseFloat(value);
-
   const updatedStudents = students.map((student) =>
     student.Roll_No === studentId ? { ...student, [name]: numericValue } : student
   );
-
   setStudents(updatedStudents);
   };
 
   const handleStatusChange = (studentId, value) => {
-    
     const updatedStudents = students.map((student) =>
       student.Roll_No === studentId ? { ...student, Status: !value } : student
     );
     setStudents(updatedStudents);
+  };
+
+  const handleAdcChange = (studentId, value) => {
+    const updatedStudents = studentsADc.map((student) =>
+    student.Roll_No === studentId ? { ...student, ADC : !value } : student
+    );
+    setStudentsADc(updatedStudents);
   };
 
   ////
@@ -247,11 +305,30 @@ export default function EnhancedTable(props) {
     }
     // console.log(semDataRef.current);
   };
+  const add_Adc_student = (e) => {
+    if(!semData.add_Adc){
+      var x= window.confirm('Do you really want to Add ADC');
+    }
+    if(x){
+      semDataRef.current.add_Adc = !semData.add_Adc;
+      setSemData({ ...semDataRef.current });
+      setStudentsADc(allStudent)
+    }
+    else{
+      semDataRef.current.add_Adc = e.target.value;
+      setSemData({ ...semDataRef.current });
+    }
+    // console.log(semDataRef.current);
+  };
+
+
+
   const onchangeFinalREval = (e) => {
     if(!semData.final_Revaluation){
       var x= window.confirm('Do you really want to do Final Reevaluation?');
     }
     if(x){
+      // setStudents(allStudent);
       semDataRef.current.final_Revaluation = !semData.final_Revaluation;
       setSemData({ ...semDataRef.current });
     }
@@ -281,11 +358,16 @@ setStudents(updatedStudents);
 
   const handleSaveData = async () => {
     const x= window.confirm('Do you really want to change in the Data?');
-
+  
     if(x){
-      semDataRef.current.students = students;
+      if(semData.add_Adc){
+        semDataRef.current.students = studentsADc;
+      }else{
+        semDataRef.current.students = students;
+      }
+      setStudentsADc(studentsADc);
+      // console.log(semDataRef.current);
        setSemData({ ...semDataRef.current });  
-    
       try {
         const x = await UpdateSem(semDataRef.current);
         // console.log(x.data);
@@ -330,6 +412,8 @@ return (
             Final_Revaluation={semData.final_Revaluation}
             Update_Kt_student={onchangeUpdateKt}
             update_Kt={semData.update_Kt}
+            add_Adc_student={add_Adc_student}
+            add_Adc={semData.add_Adc}
           />
        
       </Box>
@@ -344,21 +428,23 @@ return (
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              
+              add_Adc={semData.add_Adc}
             />
             <TableBody>
-              {visibleRows.map((student) => (
-                <TableRow
+              {visibleRows.map((student,i) => (
+                <>
+                  <TableRow 
                   hover
                   tabIndex={-1}
                   key={student.Name}
-                  sx={{ cursor: 'pointer' }}
+                  sx={{ cursor: 'pointer', pointerEvents:student.ADC?'none':"auto" , backgroundColor:student.ADC?'#ffa07a':"inherit"}}
                 >
                   <TableCell align="left">{student.Name}</TableCell>
                   <TableCell align="left" sx={{ position: "relative", left: "1vw"}}>{student.Roll_No}</TableCell>
                   {/* <TableCell align="left">{student.gender}</TableCell> */}
-             
-                    <>
+                
+                  {!semData.add_Adc?
+                       <>
                       <TableCell align="center">
                         <TextField
                           name='Sgpi'
@@ -406,13 +492,24 @@ return (
                           }
                         />
                       </TableCell>
-                   
                       </>
                       } 
-
+                    </>:<>
+                    {`${studentsADc[i].ADC}`}
+                    
+                    <TableCell key={i} align="center">
+                      <Radio    checked={studentsADc[i].ADC}  onClick={(e) =>
+                            handleAdcChange(student.Roll_No,studentsADc[i].ADC)
+                       }/>
+                    </TableCell>
                     </>
+              }    
+
+
                
                 </TableRow>
+                </>
+
               ))}
             </TableBody>
             </Table>

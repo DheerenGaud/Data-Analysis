@@ -37,13 +37,17 @@ export default function Addbatch() {
       setOpen(false);
     };
    
+    const [PreviousYearShow, setPreviousYearShow] = React.useState(false);
+    const [tfws_j_show, set_tfws_j_show] = React.useState(false);
   const [data, setData] = useState({
     Start_Year: "",
     End_Year: "",
     Departname: '',
     file: null,
-    No_of_student:5,
-    typeOfStudent:""
+    No_of_student:0,
+    typeOfStudent:"",
+    No_of_j_k:0,
+    No_of_tfws:0,
   });
 
 
@@ -84,6 +88,12 @@ export default function Addbatch() {
       ...prevData,
       typeOfStudent: e.target.value
     }));
+    if(e.target.value==="normal"){
+      set_tfws_j_show(true);
+    }
+    else{
+      set_tfws_j_show(false);
+    }
   };
 
   const handleDepartmentChange = (event) => {
@@ -92,6 +102,8 @@ export default function Addbatch() {
       ...prevData,
       Departname: newDepartment,
     }));
+  
+ 
   };
 
   const handleKeyDown = (event) => {
@@ -116,6 +128,7 @@ export default function Addbatch() {
   };
 
   const handleUpload = async () => {
+    console.log(data);
    if(data.file!==null){
      const formData = new FormData();
      formData.append('file', data.file);
@@ -123,6 +136,8 @@ export default function Addbatch() {
      formData.append('Start_Year', data.Start_Year);
      formData.append('End_Year', data.End_Year);
      formData.append('No_of_student', data.No_of_student);
+     formData.append('No_of_j_k', data.No_of_j_k);
+     formData.append('No_of_tfws', data.No_of_tfws);
     try {
       if(data.typeOfStudent!=="dse"){
             
@@ -153,6 +168,16 @@ export default function Addbatch() {
     alert("select file plese!!!")
    }
   };
+
+  
+const HandleChange = (event) => {
+  console.log(event.target.value);
+  setData((prevData) => ({
+    ...prevData,
+    [event.target.name]:  event.target.value,
+  }));
+  
+};
 
   return (
     <>
@@ -191,7 +216,28 @@ margin="normal"
 <Grid item xs={12} md={6} className='pageStyle'>
 <MonthYearSelect value={data.Start_Year} onChange={handleDateChange} onKeyDown={handleKeyDown} />
 </Grid>
-
+{
+    tfws_j_show?<>
+       <Grid item xs={12}>
+                  <TextField
+                    name="No_of_tfws"
+                    label="No of tfws"
+                    value={data.No_of_tfws}
+                    onChange={HandleChange}
+                    fullWidth
+                  />
+        </Grid>
+       <Grid item xs={12}>
+                  <TextField
+                    name="No_of_j_k"
+                    label="No of J&k"
+                    value={data.No_of_j_k}
+                    onChange={HandleChange}
+                    fullWidth
+                  />
+        </Grid>
+    </>:<></>
+  }
 <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
             Submit
           </Button>
