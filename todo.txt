@@ -1,1 +1,2 @@
-1===> Brach Chage krte time previous brench se student ke data ko new brech mai add krna hai or privious se delete krna hai
+1 (done)===> Brach Chage krte time previous brench se student ke data ko new brech mai add krna hai or privious se delete krna hai
+2 ====> refresh karoo when semseter 

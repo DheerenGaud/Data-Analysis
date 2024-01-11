@@ -30,7 +30,7 @@ export default function ForgotPass() {
 
   const handleClick = async (e) => {
     e.preventDefault();
-  console.log(data);
+
     if(data.cpassword===data.newPassword&&data.newPassword!==""){
         // setData({...data,[userId]:userId,[resetString]:resetString})
         console.log(data);
@@ -70,7 +70,7 @@ export default function ForgotPass() {
                 fullWidth
                 id="password"
               label="Enter Password"
-              name="newPassword"
+              name="password"
               onChange={handleChange}
                 autoFocus
               />
@@ -86,10 +86,10 @@ export default function ForgotPass() {
               autoFocus
             />
               <Button
+                type="submit"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick={handleClick}
               >
                 Reset Password
               </Button>

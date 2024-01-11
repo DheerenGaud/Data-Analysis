@@ -27,8 +27,8 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
     const { Departname, Start_Year, End_Year,No_of_tfws,No_of_j_k} = req.body;
      console.log(req.body);
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    // const sheetName = workbook.SheetNames[5];// my class 
-    const sheetName = workbook.SheetNames[2]; // congraculation
+    const sheetName = workbook.SheetNames[5];// my class 
+    // const sheetName = workbook.SheetNames[2]; // congraculation
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
 
@@ -435,7 +435,7 @@ Router.post("/semesterData",async(req,res)=>{
         });
 
         if (existingAcademicYear) {
-          if(existingAcademicYear.final_Revaluation[SemNo-1]&&!update_Kt){
+          if(existingAcademicYear.final_Revaluation[SemNo-1]&&!update_Kt&&!add_Adc){
              return res.json({ status: "ok", data: "Final Revaluation is Alredy Done !!!! If you Want to Update KtStudent then Select KtUpdate so Data can't update "});
            }
           else if(existingAcademicYear.current_sem!==SemNo&&!existingAcademicYear.final_Revaluation[existingAcademicYear.current_sem-1]){
@@ -618,9 +618,11 @@ Router.post("/studentByAcdmicYear",async(req,res)=>{
       Departname: Departname,
       End_Year: End_Year,
     });
+    console.log(existingAcademicYear);
 
     if (existingAcademicYear) {
      var data=  await GetAllStudentData(existingAcademicYear._id,index-1);
+
      if(existingAcademicYear.dse_key){
       // console.log(existingAcademicYear.dse_key);
        const dseData= await GetAllStudentData(existingAcademicYear.dse_key,index-1);

@@ -182,94 +182,95 @@ const HandleChange = (event) => {
   return (
     <>
   
-  <Grid container justifyContent="center" spacing={2}>
-  <Box sx={{ display: 'flex' }}>
-    <Appbar pageName='Add Batch' open={open} handleDrawerOpen={handleDrawerOpen} />
-    <Navbar open={open} handleDrawerClose={handleDrawerClose} />
-    <Box component="main" sx={{ flexGrow: 1, p: 15 }}>
-      <Typography variant="h5" align="center" gutterBottom>
-        Select Batch
-      </Typography>
-      <Box width="50vw" sx={{ display: 'flex' }}>
-        <Paper elevation={3} sx={{ flexGrow: 1, p: 6 }}>
-          <Grid container alignItems="center" spacing={1}>
-            <Grid item xs={12} sm={12} md={12}>
-              <TextField
-                select
-                required={true}
-                label="Select Type of student"
-                value={data.typeOfStudent}
-                onChange={handleChangeTypeStudent}
-                fullWidth
-              >
-                <MenuItem value="normal">Normal</MenuItem>
-                <MenuItem value="dse">DSE</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <DepartmentSelect value={data.Departname} onChange={handleDepartmentChange} />
-            </Grid>
-            <Grid item xs={12} md={6} className='pageStyle'>
-              <MonthYearSelect value={data.Start_Year} onChange={handleDateChange} onKeyDown={handleKeyDown} />
-            </Grid>
-            {
-              tfws_j_show ?
-                <>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      name="No_of_tfws"
-                      label="No of TFWS"
-                      value={data.No_of_tfws}
-                      onChange={HandleChange}
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      name="No_of_j_k"
-                      label="No of J&K"
-                      value={data.No_of_j_k}
-                      onChange={HandleChange}
-                      fullWidth
-                    />
-                  </Grid>
-                </> :
-                <></>
-            }
-            <Grid item xs={12} sx={{ mt: 1 }}>
-              <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
-                Submit
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
-        <Dialog open={openUploadDialog} onClose={() => setOpenUploadDialog(false)}>
-          <DialogTitle>Upload Batch Data</DialogTitle>
-          <DialogContent style={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              component="label"
-              variant="contained"
-              startIcon={<CloudUploadIcon />}
-              href="#file-upload"
-            >
-              Select a file
-              <VisuallyHiddenInput type="file" name='file' accept=".xlsm,.csv,.xlsx" onChange={handleFileChange} />
-            </Button>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenUploadDialog(false)} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleUpload} color="primary">
-              Upload
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </Box>
-  </Box>
-</Grid>
+<Grid container justifyContent="center" spacing={2}>
+  
+  
+<Box sx={{ display: 'flex' }}>
+<Appbar pageName='Add Batch' open={open} handleDrawerOpen={handleDrawerOpen} />
+<Navbar open={open} handleDrawerClose={handleDrawerClose} />
+<Box component="main" sx={{ flexGrow: 1, p: 15 }}>
+<Typography variant="h5" align="center" gutterBottom>
+Select Batch
+</Typography>
+<Box width="50vw" sx={{ display: 'flex' }}>
+<Paper elevation={3} sx={{ flexGrow: 1, p: 6 }}>
+<Grid container spacing={1} alignItems="center">
+<Grid item xs={12} sm={12} md={12}>
+<TextField
+select
+required={true}
+label="Select Type of student"
+value={data.typeOfStudent}
+onChange={handleChangeTypeStudent}
+fullWidth
+margin="normal"
+>
+<MenuItem value="normal">Normal</MenuItem>
+<MenuItem value="dse">DSE</MenuItem>
+</TextField>
 
+</Grid>
+<Grid item xs={12} md={6}>
+<DepartmentSelect value={data.Departname} onChange={handleDepartmentChange} />
+</Grid>
+<Grid item xs={12} md={6} className='pageStyle'>
+<MonthYearSelect value={data.Start_Year} onChange={handleDateChange} onKeyDown={handleKeyDown} />
+</Grid>
+{
+    tfws_j_show?<>
+       <Grid item xs={12}>
+                  <TextField
+                    name="No_of_tfws"
+                    label="No of tfws"
+                    value={data.No_of_tfws}
+                    onChange={HandleChange}
+                    fullWidth
+                  />
+        </Grid>
+       <Grid item xs={12}>
+                  <TextField
+                    name="No_of_j_k"
+                    label="No of J&k"
+                    value={data.No_of_j_k}
+                    onChange={HandleChange}
+                    fullWidth
+                  />
+        </Grid>
+    </>:<></>
+  }
+<Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
+            Submit
+          </Button>
+</Grid>
+</Paper>
+<Dialog open={openUploadDialog} onClose={() => setOpenUploadDialog(false)}>
+        <DialogTitle>Upload Batch Data</DialogTitle>
+        <DialogContent style={{ display: 'flex', justifyContent: 'center' }}>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+            href="#file-upload"
+          >
+            Select a file
+            <VisuallyHiddenInput type="file" name='file' accept=".xlsm,.csv,.xlsx" onChange={handleFileChange} />
+          </Button>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenUploadDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleUpload} color="primary">
+            Upload
+          </Button>
+        </DialogActions>
+      </Dialog>
+</Box>
+</Box>
+</Box>
+
+
+</Grid>
 </>
   );
 }

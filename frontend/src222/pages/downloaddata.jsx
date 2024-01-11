@@ -142,14 +142,14 @@ export default function Downloaddata() {
       value={data.document}
       onChange={handleChangeDownload}
       fullWidth
-      
+      margin="normal"
     >
       <MenuItem value="generate-excel">Eligibility</MenuItem>
-      <MenuItem value="generate-pdf-withoutKt">Without Kt</MenuItem>
-      <MenuItem value="generate-pdf-withKt">With Kt</MenuItem>
+      <MenuItem value="generate-pdf-withoutKt">WithOutKt</MenuItem>
+      <MenuItem value="generate-pdf-withKt">WithKt</MenuItem>
      
     </TextField>
-            <Button variant="contained" color="primary" sx={{ mt: 2 }} onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
+            <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleBatchSubmit} fullWidth>
               Download
             </Button>
           </Grid>

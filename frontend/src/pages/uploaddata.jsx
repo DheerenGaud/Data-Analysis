@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import Appbar from '../components/Appbar';
 import DepartmentSelect from '../components/Selectdepartment';
 import MonthYearSelect from '../components/Selectmonthyear';
-import { Grid, Button, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, MenuItem, TextField,Select, InputLabel, Paper } from '@mui/material';
+import { Grid, Button, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, MenuItem, TextField,Select, Typography, InputLabel, Paper } from '@mui/material';
 import {addStudentIndividul} from "../api/api"
 
 const genderItems = [
@@ -147,127 +147,137 @@ const handleDepartmentChange = (e) => {
 
 
   return (
-    <Box sx={{ display: 'flex' }}>
+<Grid container justifyContent="center" spacing={2}>
+  <Box sx={{ display: 'flex' }}>
     <Appbar pageName='Upload Data' open={open} handleDrawerOpen={handleDrawerOpen} />
     <Navbar open={open} handleDrawerClose={handleDrawerClose} />
-    <Box component="main" sx={{ flexGrow: 1, p: 10}}>
-          <Paper elevation={3} sx={{ flexGrow: 1, p: 5}}>
-          <Grid item xs={12} sm={12} md={12}>
-<TextField
-select
-required={true}
-name='typeOfStudent'
-label="Select Type of student"
-value={data.typeOfStudent}
-onChange={HandleChange}
-fullWidth
-margin="normal"
->
-<MenuItem value="normal">Normal</MenuItem>
-<MenuItem value="dse">DSE</MenuItem>
-<MenuItem value="branchChange">Branch Change</MenuItem>
-</TextField>
+    <Box component="main" sx={{ flexGrow: 1, p: 15 }}>
+      <Typography variant="h5" align="center" gutterBottom>
+        Enter Student Details
+      </Typography>
 
-</Grid>
-   
-  {
-    tfws_j_show?<>
-       <Grid item xs={12}>
-                  <TextField
-                    name="No_of_tfws"
-                    label="No of tfws"
-                    value={data.No_of_tfws}
-                    onChange={HandleChange}
-                    fullWidth
-                  />
-        </Grid>
-       <Grid item xs={12}>
-                  <TextField
-                    name="No_of_j_k"
-                    label="No of J&k"
-                    value={data.No_of_j_k}
-                    onChange={HandleChange}
-                    fullWidth
-                  />
-        </Grid>
-    </>:<></>
-  }
+      <Paper elevation={3} sx={{ flexGrow: 1, p: 5 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              select
+              required={true}
+              name='typeOfStudent'
+              label="Select Type of student"
+              value={data.typeOfStudent}
+              onChange={HandleChange}
+              fullWidth
+              margin="normal"
+            >
+              <MenuItem value="normal">Normal</MenuItem>
+              <MenuItem value="dse">DSE</MenuItem>
+              <MenuItem value="branchChange">Branch Change</MenuItem>
+            </TextField>
+          </Grid>
 
-  {
-    PreviousYearShow?<>
-    <label htmlFor="">Previous Departname</label>
-                  <DepartmentSelect value={data.Previous_Departname}  onChange={HandlePreviousYear} />
-                  <Grid item xs={12} spacing={1}>
-                  <TextField
-                    name="Previous_Roll_No"
-                    label="Previous RollNo"
-                    value={data.Previous_Roll_No}
-                    onChange={HandleChange}
-                    fullWidth
-                  />
-                </Grid>
-    </>:<></>
-  }
-                <Grid item xs={12} spacing={1}>
-                  <TextField
-                    name="Roll_No"
-                    label="Roll No"
-                    value={data.Roll_No}
-                    onChange={HandleChangeStudent}
-                    fullWidth
-                  />
-                </Grid>
-
-              <Grid container spacing={3}>
-                {
-                  !PreviousYearShow?<>
-                <Grid item xs={12} spacing={1}>
-                  <TextField
-                    name="Name"
-                    label="Full Name"
-                    value={data.Name}
-                    onChange={HandleChangeStudent}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl component="fieldset">
-                    <FormLabel component="legend">Gender</FormLabel>
-                    <RadioGroup
-                      name="gender"
-                      value={data.gender}
-                      onChange={HandleChangeStudent}
-                    >
-                      {genderItems.map((item) => (
-                        <FormControlLabel
-                          key={item.id}
-                          value={item.id}
-                          control={<Radio />}
-                          label={item.title}
-                        />
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                </Grid></>:<></>
-                }
-                <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12}>
-                  <DepartmentSelect value={data.Departname} onChange={handleDepartmentChange} />
-                </Grid>
-                <Grid item xs={12}>
-                  <MonthYearSelect value={data.Start_Year} onChange={handleDateChange} onKeyDown={handleKeyDown} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleSubmit} fullWidth>
-                    Submit
-                  </Button>
-                  </Grid>
-                </Grid>
+          {tfws_j_show ? (
+            <>
+              <Grid item xs={12}>
+                <TextField
+                  name="No_of_tfws"
+                  label="No of tfws"
+                  value={data.No_of_tfws}
+                  onChange={HandleChange}
+                  fullWidth
+                />
               </Grid>
-        
-          </Paper>
-          </Box>
+              <Grid item xs={12}>
+                <TextField
+                  name="No_of_j_k"
+                  label="No of J&k"
+                  value={data.No_of_j_k}
+                  onChange={HandleChange}
+                  fullWidth
+                />
+              </Grid>
+            </>
+          ) : null}
+
+          {PreviousYearShow ? (
+            <>
+              <Grid item xs={12}>
+                <label htmlFor="">Previous Departname</label>
+                <DepartmentSelect value={data.Previous_Departname} onChange={HandlePreviousYear} />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  name="Previous_Roll_No"
+                  label="Previous RollNo"
+                  value={data.Previous_Roll_No}
+                  onChange={HandleChange}
+                  fullWidth
+                />
+              </Grid>
+            </>
+          ) : null}
+
+          <Grid item xs={12}>
+            <TextField
+              name="Roll_No"
+              label="Roll No"
+              value={data.Roll_No}
+              onChange={HandleChangeStudent}
+              fullWidth
+            />
+          </Grid>
+
+          {!PreviousYearShow ? (
+            <>
+              <Grid item xs={12}>
+                <TextField
+                  name="Name"
+                  label="Full Name"
+                  value={data.Name}
+                  onChange={HandleChangeStudent}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl component="fieldset">
+                  <FormLabel component="legend">Gender</FormLabel>
+                  <RadioGroup
+                    name="gender"
+                    value={data.gender}
+                    onChange={HandleChangeStudent}
+                  >
+                    {genderItems.map((item) => (
+                      <FormControlLabel
+                        key={item.id}
+                        value={item.id}
+                        control={<Radio />}
+                        label={item.title}
+                      />
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
+            </>
+          ) : null}
+
+          <Grid item xs={12}>
+            <DepartmentSelect value={data.Departname} onChange={handleDepartmentChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <MonthYearSelect value={data.Start_Year} onChange={handleDateChange} onKeyDown={handleKeyDown} />
+          </Grid>
+          <Grid item xs={12}>
+            <Button variant="contained" color="primary" onKeyDown={handleKeyDown} onClick={handleSubmit} fullWidth>
+              Submit
+            </Button>
+          </Grid>
+        </Grid>
+
+      </Paper>
+
     </Box>
+  </Box>
+</Grid>
+
   )
 }
 

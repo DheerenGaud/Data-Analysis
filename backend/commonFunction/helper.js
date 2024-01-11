@@ -57,8 +57,6 @@ exports.DeleteStudent = async (students) => {
   }
 };
 
-
-
 exports.GetAllStudentData = async (Ac_key, index) => {
   try {
     // Find all students with the given Ac_key
@@ -371,7 +369,7 @@ exports.UpdateADC = async (students, semNo, _id) => {
     
     const academicYear = await AcademicYear.findOne({ _id });
     academicYear.No_of_ADC_Student += count;
-    academicYear.No_of_student -= count;
+    // academicYear.No_of_student -= count;
     await academicYear.save();
   } catch (error) {
     // Handle the error
@@ -392,9 +390,25 @@ const GenerateReportFirstAttempt = async (_id,semNo,fistAttemp,update_Kt) => {
   const dse_key = existingAcademicYear.dse_key;
   const branch_change_key = existingAcademicYear.branch_change_key;
 
-  const student = await GetStudentData(_id, index,fistAttemp);
-  const dseStudent = await GetStudentData(dse_key,index,fistAttemp);
-  const branchChangeStudent = await GetStudentData(branch_change_key,index,fistAttemp);
+
+  let student=0;
+  let dseStudent=0;
+  let branchChangeStudent=0;
+
+  // if(fistAttemp){
+     student = await GetStudentData(_id, index,fistAttemp);
+     dseStudent = await GetStudentData(dse_key,index,fistAttemp);
+     branchChangeStudent = await GetStudentData(branch_change_key,index,fistAttemp);
+  // }
+  // else{
+  //   student=existingAcademicYear.No_of_student-existingAcademicYear.No_of_ADC_Student
+  //   dseStudent=existingAcademicYear.No_of_dse;
+  //   branchChangeStudent = existingAcademicYear.No_of_Branch_Student;
+  // }
+
+
+
+
 
   console.log("student");
   
@@ -444,10 +458,16 @@ const GenerateReportFirstAttempt = async (_id,semNo,fistAttemp,update_Kt) => {
 
 const GetStudentData = async (_id, year,fistAttemp) => {
   let count = 0;
+  console.log("ganesh gaud ");
   const TotalSem=year*2;
   const start=TotalSem-2;
   const end=TotalSem-1;
   const students = await StudentData.find({ Ac_key: _id });
+  const academicYear= await AcademicYear.findOne(_id);
+
+  console.log(academicYear);
+
+
 
 
   await Promise.all(students.map(async (item) => {
@@ -462,7 +482,7 @@ const GetStudentData = async (_id, year,fistAttemp) => {
       }
       else{
         for (let i = start; i <=end; i=i+2) {
-          if (result.Sem[i].Status && result.Sem[i + 1].Status) {
+          if (result.Sem[i].InternalKt!=-1 && result.Sem[i].ExternalKt!=-1&&result.Sem[i+1].InternalKt!=-1 && result.Sem[i+1].ExternalKt!=-1) {
               count = count+ 1;
           }
         }
@@ -472,6 +492,11 @@ const GetStudentData = async (_id, year,fistAttemp) => {
       return null;
     }
   }));
+
+ 
+
+
+
   return count;
 }
 

@@ -78,7 +78,7 @@ const sendemailvarification=({_id,email},res)=>{
    
 Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
     let {userID,uinqueString}=req.params;
-  
+//    console.log("jhihdi");
     UserVarification.find({userID})
     .then((result)=>{
        if(result.length>0){
@@ -165,10 +165,6 @@ Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
        res.json({status:"error",data:massege})
     }) 
 })
-
-
-
-
 
 
 
@@ -326,7 +322,7 @@ Router.post("/forgotpassword",(req,res)=>{
   // Acutaly reset the password
 Router.post("/resetPassword",(req,res)=>{
       const {userId,resetString,newPassword}=req.body;
-      // console.log(req.body)
+    //   console.log(req.body)
   
       PasswordReset
       .find({userId})
