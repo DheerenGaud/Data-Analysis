@@ -17,6 +17,7 @@ const UserSecham = mongoose.Schema({
   email: {
     type: String,
     required: true,
+    
   },
   varified: {
     type: Boolean,

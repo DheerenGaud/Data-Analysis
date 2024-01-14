@@ -199,6 +199,12 @@ export default function EnhancedTable(props) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const kt_student = allStudent.filter((stu) => stu.Status === false);
+  const [genderCount,setGnderCount]=useState({
+    F:0,//female
+    M:0,// male
+    O:0,// other
+    T:0,// total student
+  })
   const [semData,setSemData]= useState({ 
     Departname:data.Departname,
     End_Year:data.End_Year,
@@ -213,6 +219,8 @@ export default function EnhancedTable(props) {
 
 
   useEffect(()=>{
+    // console.log(allStudent);
+
     semDataRef.current.final_Revaluation = Final_Revaluation;
     setSemData({ ...semDataRef.current });
   },[Final_Revaluation])
@@ -220,19 +228,68 @@ export default function EnhancedTable(props) {
   const [students, setStudents] = useState([]);
   const [studentsADc, setStudentsADc] = useState([]);
 
-  useEffect(()=>{
-    if(semData.update_Kt){
-      setStudents(kt_student)
-    }
-    else{
-      setStudents(allStudent)
-    }
-  },[allStudent,semData.update_Kt])
 
+
+  useEffect(() => {
+    if (semData.update_Kt) {
+      setStudents(kt_student);
+     const x= CountGender(kt_student)
+      setGnderCount({
+        F: x.f,
+        M: x.m,
+        O:x.o,
+        T: kt_student.length,
+      });
+    } else {
+      setStudents(allStudent);
+      const x= CountGender(allStudent)
+      setGnderCount({
+        F: x.f,
+        M: x.m,
+        O:x.o,
+        T: allStudent.length,
+      });
+    }
+    console.log(genderCount);
+  }, [allStudent, semData.update_Kt]);
+  
   const semDataRef = useRef(semData);
   
 
-
+const CountGender=(array)=>{
+  let f=0,m=0,o=0;
+  if(semData.update_Kt){
+    for (let index = 0; index < array.length; index++) {
+      const element = array[index];
+      if(element.Gender==="F"){
+        f++;
+      }
+      else if(element.Gender==="M"){
+       m++;
+      }
+      else{
+       o++;
+      }
+    }
+  }
+  else{
+    for (let index = 0; index < array.length; index++) {
+      const element = array[index];
+      if(element.Status){
+        if(element.Gender==="F"){
+          f++;
+        }
+        else if(element.Gender==="M"){
+         m++;
+        }
+        else{
+         o++;
+        }
+      }
+    }
+  }
+  return {f,m,o};
+}
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -430,6 +487,7 @@ return (
             update_Kt={semData.update_Kt}
             add_Adc_student={add_Adc_student}
             add_Adc={semData.add_Adc}
+            genderCount={genderCount}
           />
        
       </Box>
@@ -455,7 +513,7 @@ return (
                   key={student.Name}
                   sx={{ cursor: 'pointer', pointerEvents:student.ADC?'none':"auto" , backgroundColor:student.ADC?'#ffa07a':"inherit"}}
                 >
-                  <TableCell align="left">{student.Name}</TableCell>
+                  <TableCell align="left">{student.Gender==="F"?<>/ {student.Name}</>:<>{student.Name}</>}</TableCell>
                   <TableCell align="left" sx={{ position: "relative", left: "1vw"}}>{student.Roll_No}</TableCell>
                   {/* <TableCell align="left">{student.gender}</TableCell> */}
                 

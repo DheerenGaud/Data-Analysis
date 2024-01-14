@@ -8,10 +8,11 @@ exports.AddStudent = async (jsonData, Ac_key) => {
   // console.log(jsonData);
   try {
     for (const data of jsonData) {
-      const { Name, Roll_No } = data;
+      const { Name, Roll_No,Gender } = data;
       const newStudent = {
         Name: Name,
         Roll_No: Roll_No,
+        Gender:Gender, // new line added 
         Ac_key: Ac_key,
       };
       try {
@@ -73,6 +74,7 @@ exports.GetAllStudentData = async (Ac_key, index) => {
               Name: item.Name,
               ADC:item.ADC,
               Roll_No: item.Roll_No,
+              Gender:item.Gender, // new line added
               Sgpi: result.Sem[index].Sgpi,
               Status: result.Sem[index].Status,
               InternalYear: result.Sem[index].InternalYear,
