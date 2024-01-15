@@ -27,7 +27,7 @@ Router.post("/newAcdemicYear", uplode.single("file"), async (req, res) => {
     const { Departname, Start_Year, End_Year,No_of_tfws,No_of_j_k} = req.body;
      console.log(req.body);
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[5];// my class 
+    const sheetName = workbook.SheetNames[0];// my class 
     // const sheetName = workbook.SheetNames[2]; // congraculation
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
@@ -80,7 +80,7 @@ Router.post("/newDCEAcdemicYear", uplode.single("file"), async (req, res) => {
     const { Departname, Start_Year, End_Year } = req.body;
     
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[2];
+    const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet, { range: 4 });
 

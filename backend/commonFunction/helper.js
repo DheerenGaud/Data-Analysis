@@ -8,7 +8,8 @@ exports.AddStudent = async (jsonData, Ac_key) => {
   // console.log(jsonData);
   try {
     for (const data of jsonData) {
-      const { Name, Roll_No,Gender } = data;
+      if(data.Roll_No){
+        const { Name, Roll_No,Gender } = data;
       const newStudent = {
         Name: Name,
         Roll_No: Roll_No,
@@ -29,6 +30,8 @@ exports.AddStudent = async (jsonData, Ac_key) => {
         // await AcademicYear.deleteOne({ Departname: Departname, End_Year: End_Year });
         errors.push('Error occurred while adding student ' + newStudent.Roll_No);
       }
+      }
+     
     }
     if (errors.length > 0) {
        throw new Error(errors.join('\n')); // Throw an error instead of sending a response
@@ -110,9 +113,11 @@ exports.CheckUnqueStudent = async (jsonData) => {
   try {
     const RepetdRollNos = new Set();
     for (const data of jsonData) {
-      const isAvailable = await StudentData.findOne({ Roll_No: data.Roll_No });
-      if (isAvailable) {
-        RepetdRollNos.add(data.Roll_No);
+      if(data.Roll_No){
+        const isAvailable = await StudentData.findOne({ Roll_No: data.Roll_No });
+        if (isAvailable) {
+          RepetdRollNos.add(data.Roll_No);
+        }
       }
     }
     // if (RepetdRollNos.size !== 0) {
