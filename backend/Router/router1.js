@@ -458,6 +458,7 @@ Router.post("/semesterData",async(req,res)=>{
           
 
            if(add_Adc){
+            console.log(students);
              await UpdateADC(students,SemNo,existingAcademicYear._id)
            }
            else{

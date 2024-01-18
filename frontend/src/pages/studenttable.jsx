@@ -338,19 +338,16 @@ const CountGender=(array)=>{
   };
 
   const handleAdcChange = (studentId, value,i) => {
-    // console.log(studentId);
-    // console.log(i);
-    // const updatedStudents = studentsADc.map((student) =>
-    // student.Roll_No === studentId ? { ...student, ADC : !value } : student
-    // );
-    // setStudentsADc(updatedStudents);
+   
+   console.log(studentId);
+   console.log(value);
+
 
     const updatedStudents = students.map((student) =>
     student.Roll_No === studentId ? { ...student, ADC : !value } : student
     );
     setStudents(updatedStudents);
-
-
+    setStudentsADc(updatedStudents);
   };
 
   ////

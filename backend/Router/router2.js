@@ -28,7 +28,6 @@ treanspoter.verify((err,success)=>{
         console.log("Redy for masseges")
     }
 })
-
 const sendemailvarification=({_id,email},res)=>{
     const currentUrl="http://localhost:3000/";
     const uniqueSting=uuidv4()+_id;
@@ -62,7 +61,7 @@ const sendemailvarification=({_id,email},res)=>{
            })
            .catch((err)=>{
                console.log(err)
-               res.json({status:"error",data:"Could not send   email varifiaction "})
+               res.json({status:"error",data:"Could not send  email varifiaction"})
            })
        })
        .catch((err)=>{
@@ -74,7 +73,7 @@ const sendemailvarification=({_id,email},res)=>{
         res.json({status:"error",data:"An error while HASING EMAIL DATA"})
     })
    
-   }
+}
    
 Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
     let {userID,uinqueString}=req.params;
@@ -108,7 +107,6 @@ Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
                let massege="An error occured  while deleting the userVarifivation which is alredy expired." 
                res.json({status:"error",data:massege})
            })
-
          }
          else{
            // record  is valid 
@@ -117,7 +115,7 @@ Router.get("/verify/:userID/:uinqueString",async(req,res)=>{
           .compare(uinqueString,hashUniqueString)
           .then((result)=>{
            if(result){
-           
+
                // Sting match 
                User
                .updateOne({_id:userID},{varified:true})
@@ -303,7 +301,6 @@ Router.post("/forgotpassword",(req,res)=>{
               if(result[0].varified){
                   //send mail for reset password
                   sendResetPassword(result[0],redirecrURL,res);
-                    
               }
               else{
                 res.json({status:"error",data:"User is not Varified  his/her email"});
