@@ -8,10 +8,10 @@ import MonthYearSelect from '../components/Selectmonthyear';
 import { Grid, Button, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, MenuItem, TextField,Select, Typography, InputLabel, Paper } from '@mui/material';
 import {addStudentIndividul} from "../api/api"
 
-const genderItems = [
-  { id: 'male', title: 'Male' },
-  { id: 'female', title: 'Female' },
-  { id: 'other', title: 'Other' },
+const GenderItems = [
+  { id: 'M', title: 'Male' },
+  { id: 'F', title: 'Female' },
+  { id: 'O', title: 'Other' },
 ]
 
 
@@ -22,7 +22,7 @@ export default function Uploaddata() {
   const [student, setStudent] = React.useState(
     {Roll_No:0
       ,Name: ''
-      ,gender: null}
+      ,Gender: null}
   );
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -241,11 +241,11 @@ const handleDepartmentChange = (e) => {
                 <FormControl component="fieldset">
                   <FormLabel component="legend">Gender</FormLabel>
                   <RadioGroup
-                    name="gender"
-                    value={data.gender}
+                    name="Gender"
+                    value={data.Gender}
                     onChange={HandleChangeStudent}
                   >
-                    {genderItems.map((item) => (
+                    {GenderItems.map((item) => (
                       <FormControlLabel
                         key={item.id}
                         value={item.id}

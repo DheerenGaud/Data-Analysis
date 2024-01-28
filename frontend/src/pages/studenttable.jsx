@@ -393,6 +393,7 @@ const CountGender=(array)=>{
       // setStudents(allStudent);
       semDataRef.current.final_Revaluation = !semData.final_Revaluation;
       setSemData({ ...semDataRef.current });
+      handleSaveData()
     }
     else{
       semDataRef.current.final_Revaluation = semData.final_Revaluation;

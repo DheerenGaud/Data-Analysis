@@ -211,11 +211,11 @@ Router.post("/Individual/normal",async(req,res)=>{
             });
           }  
           if (!existingAcademicYear) {
-            const AcdmicYearExixt = await AcademicYear.findOne({
-              Departname: Departname,
-              End_Year: End_Year,
-            });
-            if(AcdmicYearExixt){
+            // const AcdmicYearExixt = await AcademicYear.findOne({
+            //   Departname: Departname,
+            //   End_Year: End_Year,
+            // });
+            // if(AcdmicYearExixt){
               const year = dayjs(End_Year,'MMMM YYYY').year();
               const newAcademicYear = await AcademicYear.create({
                 Departname,
@@ -230,11 +230,11 @@ Router.post("/Individual/normal",async(req,res)=>{
               await AddStudent(students, newAcademicYear._id);
               return res.json({ status: "ok", data: "All student data entered successfully"});
             }
-            else{
-              return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
+            // else{
+            //   return res.json({ status: "error", data: "Acdemic Year is Not Exsit" });
 
-            }     
-          }
+            // }     
+          // }
           else{
             existingAcademicYear.No_of_student += 1;
             await existingAcademicYear.save();
@@ -435,7 +435,7 @@ Router.post("/semesterData",async(req,res)=>{
         });
 
         if (existingAcademicYear) {
-          if(existingAcademicYear.final_Revaluation[SemNo-1]&&!update_Kt&&!add_Adc){
+          if(existingAcademicYear.final_Revaluation[SemNo-1]&&!update_Kt){
              return res.json({ status: "ok", data: "Final Revaluation is Alredy Done !!!! If you Want to Update KtStudent then Select KtUpdate so Data can't update "});
            }
           else if(existingAcademicYear.current_sem!==SemNo&&!existingAcademicYear.final_Revaluation[existingAcademicYear.current_sem-1]){
@@ -458,7 +458,6 @@ Router.post("/semesterData",async(req,res)=>{
           
 
            if(add_Adc){
-            console.log(students);
              await UpdateADC(students,SemNo,existingAcademicYear._id)
            }
            else{
@@ -619,7 +618,6 @@ Router.post("/studentByAcdmicYear",async(req,res)=>{
       Departname: Departname,
       End_Year: End_Year,
     });
-    console.log(existingAcademicYear);
 
     if (existingAcademicYear) {
      var data=  await GetAllStudentData(existingAcademicYear._id,index-1);
@@ -649,7 +647,7 @@ Router.post("/studentByAcdmicYear",async(req,res)=>{
 
 Router.post('/generate-pdf-withoutKt', async (req, res) => {
   const { Departname, End_Year } = req.body;
-
+    
   try {
     const academicYearsData = [];
 
@@ -753,7 +751,6 @@ Router.post('/generate-pdf-withoutKt', async (req, res) => {
 Router.post('/generate-pdf-withKt', async (req, res) => {
 
   const { Departname, End_Year } = req.body;
-  console.log(Departname, End_Year);
 
   try {
     const academicYearsData = [];
@@ -856,17 +853,11 @@ Router.post('/generate-pdf-withKt', async (req, res) => {
   const filename = `${Departname}_${End_Year}_academic-report-withKT.pdf`;
 
   // Save or download the PDF
-  console.log(filename);
   const pdfBuffer = doc.output();
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"; filename*=UTF-8''${filename}`);
   res.setHeader('Content-Type', 'application/pdf');
   res.send(pdfBuffer);
   
-  console.log(academicYearData);
-  
-
-
-  console.log(academicYearData);
 }catch(error) {
   console.log('error => ' + error);
   return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
